@@ -58,13 +58,14 @@ const profileReducer = (state: ProfileState, action: ProfileAction): ProfileStat
         ...state,
         documents: [...state.documents, action.payload]
       };
-    case 'UPDATE_DOCUMENT_PREVIEW':
+    case 'UPDATE_DOCUMENT_PREVIEW': {
       const newDocs = [...state.documents];
       newDocs[action.payload.index] = {
         ...newDocs[action.payload.index],
         preview: action.payload.preview
       };
       return { ...state, documents: newDocs };
+    }
     default:
       return state;
   }

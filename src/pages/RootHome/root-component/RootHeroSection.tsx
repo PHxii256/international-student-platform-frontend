@@ -1,4 +1,14 @@
 import { motion } from 'framer-motion';
+const scrollToSection = (href: string) => {
+  const element = document.querySelector(href);
+  if (element) {
+    const offsetTop = element.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({
+      top: offsetTop,
+      behavior: 'smooth'
+    });
+  }
+};
 export function RootHeroSection() {
     return (
         <section
@@ -69,18 +79,18 @@ export function RootHeroSection() {
                         </p>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <a
-                                href="#academics"
+                            <button
+                                onClick={() => scrollToSection('#academics')}
                                 className="px-8 py-4 rounded-lg bg-accent hover:bg-accent-600 text-white font-medium text-center transition-all duration-300 shadow-lg shadow-accent/30 hover:shadow-accent/50 hover:-translate-y-1">
 
                                 Explore Programs
-                            </a>
-                            <a
-                                href="#admission"
+                            </button>
+                            <button
+                                onClick={() => scrollToSection('#admission')}
                                 className="px-8 py-4 rounded-lg border-2 border-white/80 text-white hover:bg-white hover:text-navy-600 font-medium text-center transition-all duration-300 hover:-translate-y-1 backdrop-blur-sm">
 
                                 Apply Now
-                            </a>
+                            </button>
                         </div>
                     </motion.div>
                 </div>

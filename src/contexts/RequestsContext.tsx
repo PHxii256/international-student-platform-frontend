@@ -15,7 +15,7 @@ type RequestsAction =
 
 const requestsReducer = (state: Request[], action: RequestsAction): Request[] => {
   switch (action.type) {
-    case 'ADD_REQUEST':
+    case 'ADD_REQUEST': {
       const newId = `REQ-${Date.now()}`;
       const newDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       return [
@@ -29,6 +29,7 @@ const requestsReducer = (state: Request[], action: RequestsAction): Request[] =>
           files: action.payload.files
         }
       ];
+    }
     case 'UPDATE_REQUEST_STATUS':
       return state.map(req => 
         req.id === action.payload.id 

@@ -1,11 +1,8 @@
 import React, { useState } from 'react';
-import type { PageType } from '../App';
 import { motion } from 'framer-motion';
 import {
   Download,
   ExternalLink,
-  ChevronDown,
-  ChevronUp,
   GraduationCap,
   Monitor,
   Mail,
@@ -13,12 +10,9 @@ import {
   Home,
   Bus,
   HeartPulse,
-  BookOpen,
-  CreditCard,
-  Globe
+  BookOpen
 } from 'lucide-react';
 
-// تعريف أنواع البيانات
 interface ResourceFile {
   name: string;
   size: string;
@@ -119,7 +113,7 @@ const ResourceSection: React.FC<ResourceSectionProps> = ({ category, isOpen, onT
   </div>
 );
 
-export default function Resources({ onNavigate }: { onNavigate: (page: PageType) => void }) {
+export function Resources() {
   const [openCategories, setOpenCategories] = useState<{ [key: string]: boolean }>({});
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -201,12 +195,12 @@ export default function Resources({ onNavigate }: { onNavigate: (page: PageType)
                 animate={{ opacity: 1, scale: 1 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 hover:border-emerald-200 dark:hover:border-emerald-500 hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center h-40 overflow-hidden cursor-pointer"
+                className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 hover:border-emerald-200 dark:hover:border-emerald-500 hover:shadow-xl transition-all duration-300 flex flex-col items-center text-center h-40 overflow-hidden cursor-pointer"
               >
                 <div className={`p-4 rounded-2xl mb-4 w-16 h-16 flex items-center justify-center ${link.color} bg-opacity-10 group-hover:bg-opacity-20 transition-all`}>
                   <link.icon className="w-8 h-8" />
                 </div>
-                <h3 className="font-bold text-gray-800 dark:text-white text-lg mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 leading-tight line-clamp-2 px-2">{link.title}</h3>
+              <h3 className="font-bold text-gray-800 dark:text-white text-lg mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 leading-tight line-clamp-2 px-2">{link.title}</h3>
                 <ExternalLink className="w-4 h-4 text-emerald-500 opacity-0 group-hover:opacity-100 transition-all ml-1 absolute bottom-2 right-4" />
               </motion.a>
             ))}
@@ -224,8 +218,10 @@ export default function Resources({ onNavigate }: { onNavigate: (page: PageType)
             <p className="text-lg opacity-90">Contact International Students Affairs for additional resources</p>
           </div>
           <button 
-            onClick={() => onNavigate?.('contact-us')}
             className="bg-white text-emerald-600 px-8 py-4 rounded-2xl font-bold text-lg hover:bg-emerald-50 hover:scale-105 transition-all shadow-lg"
+            onClick={() => {
+              window.location.href = '/contact-us';
+            }}
           >
             Contact Us
           </button>

@@ -7,6 +7,7 @@ import {
     Instagram,
     Linkedin
 } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
 
 interface FooterProps {
     darkMode?: boolean;
@@ -34,19 +35,27 @@ export function Footer({ darkMode = false }: FooterProps) {
                         <h3 className="text-lg font-semibold mb-4 text-[#00AC5C]">Links</h3>
                         <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-navy-100'}`}>
                             {[
-                                { label: 'Home', href: '/' },
-                                { label: 'The University', href: 'https://must.edu.eg/about-must/board-of-trustees/' },
-                                { label: 'Academics', href: 'https://must.edu.eg/academic_programs/undergraduate-studies/' },
-                                { label: 'Life at MUST', href: 'https://must.edu.eg/about-must/board-of-trustees/' },
-                                { label: 'Research & Centres', href: 'https://must.edu.eg/centers/' },
-                                { label: 'Maps & Directions', href: 'https://must.edu.eg/centers/' },
-                                { label: 'FAQs', href: 'https://must.edu.eg/faqs/' }
-                            ].map(({ label, href }) => (
-                                <li key={label}>
-                                    <a href={href} target="_blank" rel="noopener noreferrer" className="hover:text-[#00AC5C]">
-                                        {label}
-                                    </a>
-                                </li>
+                                { label: 'Home', to: '/dashboard' },
+                                { label: 'The University', href: 'https://must.edu.eg/about-must/board-of-trustees/', external: true },
+                                { label: 'Academics', href: 'https://must.edu.eg/academic_programs/undergraduate-studies/', external: true },
+                                { label: 'Life at MUST', href: 'https://must.edu.eg/about-must/board-of-trustees/', external: true },
+                                { label: 'Research & Centres', href: 'https://must.edu.eg/centers/', external: true },
+                                { label: 'Maps & Directions', href: 'https://must.edu.eg/centers/', external: true },
+                                { label: 'FAQs', href: 'https://must.edu.eg/faqs/', external: true }
+                            ].map(({ label, href, to, external }) => (
+                                external ? (
+                                    <li key={label}>
+                                        <a href={href!} target="_blank" rel="noopener noreferrer" className="hover:text-[#00AC5C]">
+                                            {label}
+                                        </a>
+                                    </li>
+                                ) : (
+                                    <li key={label}>
+                                        <NavLink to={to!} className="hover:text-[#00AC5C]">
+                                            {label}
+                                        </NavLink>
+                                    </li>
+                                )
                             ))}
                         </ul>
                     </div>
@@ -58,19 +67,27 @@ export function Footer({ darkMode = false }: FooterProps) {
                         </h3>
                         <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-navy-100'}`}>
                             {[
-                                { label: 'About MUST', href: 'https://must.edu.eg/about-must/board-of-trustees/' },
-                                { label: 'History', href: 'https://must.edu.eg/history/' },
-                                { label: 'Accreditation', href: '#' },
-                                { label: 'Why MUST', href: 'https://must.edu.eg/why-must/' },
-                                { label: 'Values', href: 'https://must.edu.eg/about-must/must-policies/' },
-                                { label: 'Contact Us', href: 'https://must.edu.eg/contact/' },
-                                { label: 'Privacy Policy', href: 'https://must.edu.eg/privacy-policy-2/' }
-                            ].map(({ label, href }) => (
-                                <li key={label}>
-                                    <a href={href} target="_blank" rel="noopener noreferrer" className="hover:text-[#00AC5C]">
-                                        {label}
-                                    </a>
-                                </li>
+                                { label: 'About MUST', href: 'https://must.edu.eg/about-must/board-of-trustees/', external: true },
+                                { label: 'History', href: 'https://must.edu.eg/history/', external: true },
+                                { label: 'Accreditation', to: '/academics' },
+                                { label: 'Why MUST', href: 'https://must.edu.eg/why-must/', external: true },
+                                { label: 'Values', href: 'https://must.edu.eg/about-must/must-policies/', external: true },
+                                { label: 'Contact Us', to: '/contact-us' },
+                                { label: 'Privacy Policy', href: 'https://must.edu.eg/privacy-policy-2/', external: true }
+                            ].map(({ label, href, to, external }) => (
+                                external ? (
+                                    <li key={label}>
+                                        <a href={href!} target="_blank" rel="noopener noreferrer" className="hover:text-[#00AC5C]">
+                                            {label}
+                                        </a>
+                                    </li>
+                                ) : (
+                                    <li key={label}>
+                                        <NavLink to={to!} className="hover:text-[#00AC5C]">
+                                            {label}
+                                        </NavLink>
+                                    </li>
+                                )
                             ))}
                         </ul>
                     </div>
@@ -82,15 +99,15 @@ export function Footer({ darkMode = false }: FooterProps) {
                         </h3>
                         <ul className={`space-y-2 text-sm ${darkMode ? 'text-gray-300' : 'text-navy-100'}`}>
                             {[
-                                { label: 'MUST Events', href: '#' },
-                                { label: 'MUST News', href: '#' },
-                                { label: 'Blog', href: '#' },
-                                { label: 'Announcement', href: '#' }
-                            ].map(({ label, href }) => (
+                                { label: 'MUST Events', to: '/announcements' },
+                                { label: 'MUST News', to: '/announcements' },
+                                { label: 'Blog', to: '/resources' },
+                                { label: 'Announcement', to: '/announcements' }
+                            ].map(({ label, to }) => (
                                 <li key={label}>
-                                    <a href={href} className="hover:text-[#00AC5C]">
+                                    <NavLink to={to} className="hover:text-[#00AC5C]">
                                         {label}
-                                    </a>
+                                    </NavLink>
                                 </li>
                             ))}
                         </ul>

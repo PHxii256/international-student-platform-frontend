@@ -24,7 +24,7 @@ export function FloatingSocialBar() {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="w-14 h-14 md:w-16 md:h-16 lg:w-16 lg:h-16 bg-white rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center group border-0"
+className="w-14 h-14 md:w-16 md:h-16 lg:w-16 lg:h-16 bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex items-center justify-center group border-0 text-gray-800 dark:text-white"
           aria-label={label}
         >
           <Icon className="w-7 h-7 text-gray-600 group-hover:text-emerald-500 group-hover:scale-110 transition-all duration-200" />

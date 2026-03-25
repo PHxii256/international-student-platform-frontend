@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLanguage } from '../contexts/LanguageContext';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Search,
   Bell,
@@ -16,25 +16,26 @@ import {
 import type { PageType, Language } from '../App';
 
 interface NavbarProps {
-    language: Language;
-    onToggleLanguage: (lang: Language) => void;
-    darkMode: boolean;
-    onToggleDarkMode: () => void;
+  language: Language;
+  onToggleLanguage: (lang: Language) => void;
+  darkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
-
 export function Navbar({
-  currentPage,
-  onNavigate,
   language,
   onToggleLanguage,
   darkMode,
   onToggleDarkMode
 }: NavbarProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+
+  const currentPage = location.pathname.slice(1) as PageType || 'dashboard';
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -47,17 +48,17 @@ export function Navbar({
   }, []);
 
   const navItems: Array<{ id: PageType; label: string }> = [
-    { id: 'dashboard' as const, label: t('university') || 'University' },
-    { id: 'academics' as const, label: t('academics') || 'Academics' },
-    { id: 'submit-request' as const, label: t('admission') || 'Admission' },
-    { id: 'announcements' as const, label: t('mustBuzz') || 'MUST Buzz' },
-    { id: 'resources' as const, label: t('centers') || 'Centers' },
-    { id: 'profile' as const, label: t('lifeAtMUST') || 'Life at MUST' },
-    { id: 'questionnaires' as const, label: t('sdgs') || 'SDGs' }
+    { id: 'dashboard' as PageType, label: t('university') || 'University' },
+    { id: 'academics' as PageType, label: t('academics') || 'Academics' },
+    { id: 'submit-request' as PageType, label: t('admission') || 'Admission' },
+    { id: 'announcements' as PageType, label: t('mustBuzz') || 'MUST Buzz' },
+    { id: 'resources' as PageType, label: t('centers') || 'Centers' },
+    { id: 'profile' as PageType, label: t('lifeAtMUST') || 'Life at MUST' },
+    { id: 'questionnaires' as PageType, label: t('sdgs') || 'SDGs' }
   ];
 
   const handleNavClick = (page: PageType) => {
-    onNavigate(page);
+    navigate(`/${page}`);
     setIsMobileMenuOpen(false);
   };
 
@@ -137,7 +138,7 @@ export function Navbar({
           </button>
 
           {/* Search */}
-          <button className="p-2 text-navy-600 hover:text-[#00AC5C] rounded-full transition-colors">
+          <button className="p-2 text-navy-600 dark:text-gray-300 hover:text-[#00AC5C] rounded-full transition-colors" onClick={() => alert('Search functionality coming soon')}>
             <Search className="w-5 h-5" />
           </button>
 
@@ -154,7 +155,7 @@ export function Navbar({
               className="flex items-center gap-2 p-2 rounded-full hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-colors"
             >
               <img
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
+                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ampr;auto=format&amp;fit=crop&amp;w=100&amp;q=80"
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-600"
               />
@@ -188,7 +189,10 @@ export function Navbar({
                   {t('settings') || 'Settings'}
                 </button>
                 <div className="border-t border-gray-100 dark:border-gray-600 my-1" />
-                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors">
+                <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-3 transition-colors" onClick={() => {
+                  localStorage.clear();
+                  navigate('/');
+                }}>
                   <LogOut className="w-4 h-4" />
                   {t('signOut') || 'Sign Out'}
                 </button>

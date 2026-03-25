@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import {motion } from 'framer-motion';
 import {
   GraduationCapIcon,
   BookOpenIcon,
@@ -8,6 +8,16 @@ import {
   GlobeIcon } from
 'lucide-react';
 import {SectionHeading} from "../SectionHeading.tsx";
+const scrollToSection = (href: string) => {
+  const element = document.querySelector(href);
+  if (element) {
+    const offsetTop = element.getBoundingClientRect().top + window.scrollY - 80;
+    window.scrollTo({
+      top: offsetTop,
+      behavior: 'smooth'
+    });
+  }
+};
 
 const cards = [
 {
@@ -59,8 +69,8 @@ export function QuickAccess() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
           {cards.map((card, index) =>
-          <motion.a
-            href={card.href}
+          <motion.button
+            onClick={() => scrollToSection(card.href)}
             key={index}
             initial={{
               opacity: 0,
@@ -77,7 +87,7 @@ export function QuickAccess() {
               duration: 0.5,
               delay: index * 0.1
             }}
-            className="group block bg-white dark:bg-navy-500 rounded-xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-transparent hover:border-accent relative overflow-hidden">
+            className="group block bg-white dark:bg-navy-500 rounded-xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-t-4 border-transparent hover:border-accent relative overflow-hidden w-full">
 
               <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
 
@@ -92,7 +102,7 @@ export function QuickAccess() {
               <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 {card.description}
               </p>
-            </motion.a>
+            </motion.button>
           )}
         </div>
       </div>

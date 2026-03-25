@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
   FileText,
@@ -16,16 +17,15 @@ import {
   MapPin,
   CalendarDays
 } from 'lucide-react';
-import type { PageType } from '../App';
 
 interface DashboardProps {
-    darkMode?: boolean;
+  darkMode?: boolean;
 }
 
-
-export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
+export function Dashboard({ darkMode = false }: DashboardProps) {
   const { t } = useTranslation();
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [activeEventsTab, setActiveEventsTab] = React.useState<'events' | 'news'>('events');
 
   const containerVariants = {
@@ -47,7 +47,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
 
   const quickActions = [
     {
-      id: 'schedule' as PageType,
+      id: 'schedule',
       icon: Calendar,
       title: t('viewSchedule', { defaultValue: 'View Schedule' }),
       desc: t('viewScheduleDesc', { defaultValue: 'Check your weekly classes and exams' }),
@@ -56,7 +56,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
       darkBg: 'bg-blue-500/10'
     },
     {
-      id: 'submit-request' as PageType,
+      id: 'submit-request',
       icon: FileText,
       title: t('submitRequest', { defaultValue: 'Submit Request' }),
       desc: t('submitRequestDesc', { defaultValue: 'Apply for letters, transcripts, or visas' }),
@@ -65,7 +65,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
       darkBg: 'bg-[#00AC5C]/10'
     },
     {
-      id: 'my-requests' as PageType,
+      id: 'my-requests',
       icon: ClipboardList,
       title: t('myRequests', { defaultValue: 'My Requests' }),
       desc: t('myRequestsDesc', { defaultValue: 'Track your submitted applications' }),
@@ -74,7 +74,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
       darkBg: 'bg-orange-500/10'
     },
     {
-      id: 'announcements' as PageType,
+      id: 'announcements',
       icon: Megaphone,
       title: t('announcements', { defaultValue: 'Announcements' }),
       desc: t('announcementsDesc', { defaultValue: 'Official news and important updates' }),
@@ -83,7 +83,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
       darkBg: 'bg-purple-500/10'
     },
     {
-      id: 'studentServices' as PageType,
+      id: 'studentServices',
       icon: Building2,
       title: t('studentServices', { defaultValue: 'Student Services' }),
       desc: t('studentServicesDesc', { defaultValue: 'Housing, medical, and library access' }),
@@ -92,7 +92,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
       darkBg: 'bg-teal-500/10'
     },
     {
-      id: 'contactAdvisor' as PageType,
+      id: 'contactAdvisor',
       icon: MessageSquare,
       title: t('contactAdvisor', { defaultValue: 'Contact Advisor' }),
       desc: t('contactAdvisorDesc', { defaultValue: 'Message your international advisor' }),
@@ -138,6 +138,19 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
     },
     // Add more...
   ];
+
+  const handleQuickAction = (id: string) => {
+    if (id === 'schedule') {
+      navigate('/schedule');
+    } else if (id === 'submit-request') {
+      navigate('/submit-request');
+    } else if (id === 'my-requests') {
+      navigate('/my-requests');
+    } else if (id === 'announcements') {
+      navigate('/announcements');
+    }
+    // Add other navigations as needed
+  };
 
   return (
     <div className="page-container space-y-8 pt-6 md:pt-2">
@@ -197,7 +210,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
               <motion.div
                 key={action.id}
                 variants={itemVariants}
-                onClick={() => onNavigate(action.id)}
+                onClick={() => handleQuickAction(action.id)}
                 className="card p-6 cursor-pointer hover:shadow-lg transition-all"
               >
                 <div className="flex items-start gap-4">
@@ -217,7 +230,7 @@ export function Dashboard({ onNavigate, darkMode = false }: DashboardProps) {
             ))}
           </motion.div>
         </div>
-        {/* Sidebar content... keep existing */}
+        {/* Sidebar content - preserve existing */}
       </div>
     </div>
   );

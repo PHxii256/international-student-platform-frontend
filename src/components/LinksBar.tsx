@@ -1,36 +1,38 @@
 import React from 'react';
-import { useLanguage } from '../contexts/LanguageContext';
-import type { PageType } from '../App';
+import { useTranslation } from 'react-i18next';
+import { NavLink } from 'react-router-dom';
 
 interface LinksBarProps {
-  onNavigate: (page: PageType) => void;
   className?: string;
 }
 
-export function LinksBar({ onNavigate, className = '' }: LinksBarProps) {
-  const { t } = useLanguage();
+export function LinksBar({ className = '' }: LinksBarProps) {
+  const { t } = useTranslation();
 
-  const links: Array<{ id: PageType; label: string }> = [
-    { id: 'dashboard' as PageType, label: t('home') || 'Home' },
-    { id: 'academics' as PageType, label: t('academics') || 'Academics' },
-    { id: 'questionnaires' as PageType, label: t('questionnaires') || 'Questionnaires' },
-    { id: 'resources' as PageType, label: t('resources') || 'Resources' },
-    { id: 'announcements' as PageType, label: t('announcements') || 'Announcements' },
-    { id: 'contact-us' as PageType, label: t('contactUs') || 'Contact Us' },
+  const links: Array<{ id: string; label: string }> = [
+    { id: 'dashboard', label: t('home') || 'Home' },
+    { id: 'academics', label: t('academics') || 'Academics' },
+    { id: 'questionnaires', label: t('questionnaires') || 'Questionnaires' },
+    { id: 'resources', label: t('resources') || 'Resources' },
+    { id: 'announcements', label: t('announcements') || 'Announcements' },
+    { id: 'contact-us', label: t('contactUs') || 'Contact Us' },
   ];
 
   return (
     <div className={`flex space-x-8 ${className}`}>
       {links.map((link) => (
-        <button
+        <NavLink
           key={link.id}
-          onClick={() => onNavigate(link.id)}
-          className="text-white text-lg font-medium hover:text-green-400 transition-colors duration-300 px-4 py-2 border-none bg-transparent cursor-pointer no-underline"
+          to={`/${link.id}`}
+          className={({ isActive }) => 
+            `text-white text-lg font-medium hover:text-green-400 transition-colors duration-300 px-4 py-2 border-none bg-transparent cursor-pointer no-underline ${
+              isActive ? 'text-green-400 ring-2 ring-green-400/50 rounded-md' : ''
+            }`
+          }
         >
           {link.label}
-        </button>
+        </NavLink>
       ))}
     </div>
   );
 }
-

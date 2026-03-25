@@ -21,12 +21,7 @@ const images = [
   '/images/WhatsApp Image 2026-03-25 at 7.29.24 PM.jpeg'
 ];
 
-interface HeroSliderProps {
-  darkMode?: boolean;
-  onNavigate: (page: PageType) => void;
-}
-
-export function HeroSlider({ darkMode = false, onNavigate }: HeroSliderProps) {
+export function HeroSlider({ darkMode = false }: { darkMode?: boolean }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
 
@@ -79,7 +74,7 @@ export function HeroSlider({ darkMode = false, onNavigate }: HeroSliderProps) {
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold font-cairo leading-tight max-w-4xl mx-auto mb-12 drop-shadow-2xl">
           International Students Platform
         </h1>
-        <LinksBar onNavigate={onNavigate} className="flex space-x-8 justify-center" />
+        <LinksBar className="flex space-x-8 justify-center" />
       </motion.div>
 
       {/* Navigation Arrows */}

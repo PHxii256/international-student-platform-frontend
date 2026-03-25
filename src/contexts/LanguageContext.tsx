@@ -67,7 +67,7 @@ const translations: Translations = {
     aboutUniversity: 'About University',
     mustBuzz: 'MUST Buzz',
     contactInfo: 'Contact Info',
-    university: 'University Link',
+    universityLink: 'University Link',
     academicsFooter: 'Academics',
     lifeAtMUST: 'Life at MUST',
     research: 'Research & Centres',
@@ -84,7 +84,7 @@ const translations: Translations = {
     admission: 'Admission',
     mustBuzz: 'Must Buzz',
     centers: 'Centers',
-    lifeAtMUST: 'Life at MUST',
+    lifeAtMUSTNav: 'Life at MUST',
     sdgs: 'SDGs',
     internationalStudentsPlatform: 'International Students Platform'
   },
