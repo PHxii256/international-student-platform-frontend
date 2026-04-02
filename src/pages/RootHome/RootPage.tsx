@@ -29,7 +29,7 @@ export function RootPage() {
 
     return (
     <>
-        <RootHeroSection />
+        {/*<RootHeroSection />*/}
         <QuickAccess />
         <FacultiesSection />
         <ProgramsSection/>
