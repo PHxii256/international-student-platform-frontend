@@ -10,7 +10,7 @@ export function Academics() {
 
   return (
     <>
-        <Hero />
+        {/*<Hero />*/}
         <AcademicStaff />
         <StudyPlans />
         <HowToApply />

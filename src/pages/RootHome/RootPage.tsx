@@ -15,7 +15,7 @@ export function RootPage() {
     return (
     <>
 
-        <HeroSlider />
+        {/*<HeroSlider />*/}
         {/*<RootHeroSection />*/}
         <QuickAccess />
         <FacultiesSection />

@@ -23,6 +23,7 @@ import { Schedule } from './pages/Schedule';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { RequestsProvider } from './contexts/RequestsContext';
 import { LanguageProvider, Language, useLanguage } from './contexts/LanguageContext';
+import {HeroSlider} from "./components/HeroSlider.tsx";
 
 export type PageType = 'dashboard' | 'academics' | 'questionnaires' | 'resources' | 'announcements' | 'notifications' | 'contact-us' | 'profile' | 'settings' | 'submit-request' | 'my-requests';
 
@@ -58,6 +59,7 @@ function AppContent() {
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'dark bg-comfortDark-bg text-comfortDark-text' : 'bg-white text-gray-900'}`}>
 <Navbar language={language} onToggleLanguage={toggleLanguage} darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
+    <HeroSlider />
     <main className="flex-1 pt-16 md:pt-20">
         <AnimatePresence mode="wait" key={location.pathname}>
           <motion.div
