@@ -9,7 +9,6 @@ import { HeroSlider } from './components/HeroSlider';
 import { FloatingSocialBar } from './components/FloatingSocialBar';
 import { LinksBar } from './components/LinksBar';
 // Pages
-import { Dashboard } from './pages/Dashboard';
 import {Academics} from "./pages/Accademics/Academics.tsx";
 import Questionnaires from './pages/Questionnaires';
 import { Resources } from './pages/Resources';
@@ -21,13 +20,16 @@ import { Settings } from './pages/Settings';
 import { SubmitRequest } from './pages/SubmitRequest';
 import { MyRequests } from './pages/MyRequests';
 import { RootPage } from './pages/RootHome/RootPage';
-import { Schedule } from './pages/Schedule';
 import { NotFound } from './pages/NotFound';
+import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 import { ProfileProvider } from './contexts/ProfileContext';
 import { RequestsProvider } from './contexts/RequestsContext';
 import { LanguageProvider, Language, useLanguage } from './contexts/LanguageContext';
+import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-export type PageType = 'dashboard' | 'academics' | 'questionnaires' | 'resources' | 'announcements' | 'notifications' | 'contact-us' | 'profile' | 'settings' | 'submit-request' | 'my-requests';
+export type PageType = 'academics' | 'questionnaires' | 'resources' | 'announcements' | 'notifications' | 'contact-us' | 'profile' | 'settings' | 'submit-request' | 'my-requests';
 
 export type { Language } from './contexts/LanguageContext';
 
@@ -56,8 +58,6 @@ function AppContent() {
     }
   }, []);
 
-  const currentPage = location.pathname.slice(1) as PageType || 'dashboard';
-
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'dark bg-comfortDark-bg text-comfortDark-text' : 'bg-white text-gray-900'}`}>
 <MustHeader language={language as any} onToggleLanguage={toggleLanguage as any} darkMode={darkMode} onToggleDarkMode={toggleDarkMode} />
@@ -73,18 +73,18 @@ function AppContent() {
             className="min-h-[calc(100vh-140px)]">
             <Routes>
               <Route path="/" element={<RootPage />} />
-              <Route path="/dashboard" element={<Dashboard darkMode={darkMode} />} />
               <Route path="/academics" element={<Academics />} />
-              <Route path="/questionnaires" element={<Questionnaires darkMode={darkMode} />} />
+              <Route path="/questionnaires" element={<Questionnaires />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/announcements" element={<Announcements />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/contact-us" element={<ContactUs />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/settings" element={<Settings />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/submit-request" element={<SubmitRequest />} />
   <Route path="/my-requests" element={<MyRequests />} />
-  <Route path="/schedule" element={<Schedule darkMode={darkMode} />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
 
@@ -101,13 +101,15 @@ export function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <LanguageProvider>
-        <ProfileProvider>
-          <RequestsProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-          </RequestsProvider>
-        </ProfileProvider>
+        <AuthProvider>
+          <ProfileProvider>
+            <RequestsProvider>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+            </RequestsProvider>
+          </ProfileProvider>
+        </AuthProvider>
       </LanguageProvider>
     </I18nextProvider>
   );

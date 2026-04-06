@@ -27,6 +27,8 @@ const CMS_API_ENDPOINTS = {
 const DEFAULT_POPULATE = 'populate=*';
 
 type CmsBlock = {
+  type?: string;
+  content?: string;
   __component?: string;
   body?: string;
   quote?: string;
@@ -50,6 +52,43 @@ function normalizeBlocks(blocks: unknown): Homepage['blocks'] {
 
   return (blocks as CmsBlock[])
     .map((block) => {
+      if (block.type === 'rich-text' && block.content) {
+        return {
+          type: 'rich-text' as const,
+          content: block.content,
+        };
+      }
+
+      if (block.type === 'quote' && block.quote) {
+        return {
+          type: 'quote' as const,
+          quote: block.quote,
+          author: block.author,
+        };
+      }
+
+      if (block.type === 'media' && block.media?.url) {
+        return {
+          type: 'media' as const,
+          url: block.media.url,
+          alt: block.media.alternativeText,
+          caption: block.media.caption,
+        };
+      }
+
+      if (block.type === 'slider' && Array.isArray(block.slides)) {
+        return {
+          type: 'slider' as const,
+          slides: block.slides
+            .filter((slide) => !!slide.image)
+            .map((slide) => ({
+              image: slide.image as string,
+              title: slide.title,
+              description: slide.description,
+            })),
+        };
+      }
+
       const component = block.__component || '';
 
       if (component === 'shared.rich-text' && block.body) {
@@ -94,10 +133,23 @@ function normalizeBlocks(blocks: unknown): Homepage['blocks'] {
     .filter((block): block is NonNullable<typeof block> => block !== null);
 }
 
+function unwrapSingleTypeData<T>(data: T | { attributes?: T }): T {
+  if (data && typeof data === 'object' && 'attributes' in (data as any) && (data as any).attributes) {
+    return {
+      ...(data as any),
+      ...(data as any).attributes,
+    } as T;
+  }
+
+  return data as T;
+}
+
 function normalizeSingleTypeResponse<T extends { blocks?: unknown }>(data: T): T {
+  const normalizedData = unwrapSingleTypeData(data);
+
   return {
-    ...data,
-    blocks: normalizeBlocks(data?.blocks),
+    ...normalizedData,
+    blocks: normalizeBlocks(normalizedData?.blocks),
   };
 }
 
@@ -107,7 +159,8 @@ function normalizeSingleTypeResponse<T extends { blocks?: unknown }>(data: T): T
 export async function getHomepage(): Promise<Homepage> {
   try {
     const response = await apiRequest<StrapiSingleTypeResponse<Homepage>>(
-      `${CMS_API_ENDPOINTS.HOMEPAGE}?${DEFAULT_POPULATE}`
+      `${CMS_API_ENDPOINTS.HOMEPAGE}?${DEFAULT_POPULATE}`,
+      { auth: false }
     );
     return normalizeSingleTypeResponse((response.data || {}) as Homepage);
   } catch (error) {
@@ -122,7 +175,8 @@ export async function getHomepage(): Promise<Homepage> {
 export async function getAcademics(): Promise<Academics> {
   try {
     const response = await apiRequest<StrapiSingleTypeResponse<Academics>>(
-      `${CMS_API_ENDPOINTS.ACADEMICS}?${DEFAULT_POPULATE}`
+      `${CMS_API_ENDPOINTS.ACADEMICS}?${DEFAULT_POPULATE}`,
+      { auth: false }
     );
     return normalizeSingleTypeResponse((response.data || {}) as Academics);
   } catch (error) {
@@ -137,7 +191,8 @@ export async function getAcademics(): Promise<Academics> {
 export async function getQuestionnaires(): Promise<Questionnaires> {
   try {
     const response = await apiRequest<StrapiSingleTypeResponse<Questionnaires>>(
-      `${CMS_API_ENDPOINTS.QUESTIONNAIRES}?${DEFAULT_POPULATE}`
+      `${CMS_API_ENDPOINTS.QUESTIONNAIRES}?${DEFAULT_POPULATE}`,
+      { auth: false }
     );
     return normalizeSingleTypeResponse((response.data || {}) as Questionnaires);
   } catch (error) {
@@ -152,7 +207,8 @@ export async function getQuestionnaires(): Promise<Questionnaires> {
 export async function getResources(): Promise<Resources> {
   try {
     const response = await apiRequest<StrapiSingleTypeResponse<Resources>>(
-      `${CMS_API_ENDPOINTS.RESOURCES}?${DEFAULT_POPULATE}`
+      `${CMS_API_ENDPOINTS.RESOURCES}?${DEFAULT_POPULATE}`,
+      { auth: false }
     );
     return normalizeSingleTypeResponse((response.data || {}) as Resources);
   } catch (error) {
@@ -167,7 +223,8 @@ export async function getResources(): Promise<Resources> {
 export async function getAnnouncements(): Promise<Announcements> {
   try {
     const response = await apiRequest<StrapiSingleTypeResponse<Announcements>>(
-      `${CMS_API_ENDPOINTS.ANNOUNCEMENTS}?${DEFAULT_POPULATE}`
+      `${CMS_API_ENDPOINTS.ANNOUNCEMENTS}?${DEFAULT_POPULATE}`,
+      { auth: false }
     );
     return normalizeSingleTypeResponse((response.data || {}) as Announcements);
   } catch (error) {
@@ -183,7 +240,8 @@ export async function getContactUs(): Promise<ContactUs> {
   try {
     // Use the exact single-type endpoint requested by backend contract.
     const directResponse = await apiRequest<StrapiSingleTypeResponse<ContactUs>>(
-      CMS_API_ENDPOINTS.CONTACT_US
+      CMS_API_ENDPOINTS.CONTACT_US,
+      { auth: false }
     );
 
     const directData = normalizeSingleTypeResponse((directResponse.data || {}) as ContactUs);
@@ -191,7 +249,8 @@ export async function getContactUs(): Promise<ContactUs> {
     // If blocks are missing from direct response, fetch populated payload.
     if (!directData.blocks || directData.blocks.length === 0) {
       const populatedResponse = await apiRequest<StrapiSingleTypeResponse<ContactUs>>(
-        `${CMS_API_ENDPOINTS.CONTACT_US}?${DEFAULT_POPULATE}`
+        `${CMS_API_ENDPOINTS.CONTACT_US}?${DEFAULT_POPULATE}`,
+        { auth: false }
       );
       return normalizeSingleTypeResponse((populatedResponse.data || {}) as ContactUs);
     }
@@ -201,7 +260,8 @@ export async function getContactUs(): Promise<ContactUs> {
     try {
       // Fallback for setups that require explicit relation population.
       const populatedResponse = await apiRequest<StrapiSingleTypeResponse<ContactUs>>(
-        `${CMS_API_ENDPOINTS.CONTACT_US}?${DEFAULT_POPULATE}`
+        `${CMS_API_ENDPOINTS.CONTACT_US}?${DEFAULT_POPULATE}`,
+        { auth: false }
       );
       return normalizeSingleTypeResponse((populatedResponse.data || {}) as ContactUs);
     } catch (fallbackError) {

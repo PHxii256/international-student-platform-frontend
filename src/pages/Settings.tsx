@@ -1,231 +1,229 @@
-import { motion } from 'framer-motion';
-import { Lock, Globe, Bell, Shield, Save } from 'lucide-react';
-import { useLanguage } from '../contexts/LanguageContext';
-import { useTranslation } from 'react-i18next';
+import { FormEvent, useMemo, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import {
+  changePassword,
+  updateProfile,
+  uploadAvatar,
+  type ChangePasswordPayload,
+  type UpdateProfilePayload,
+} from '../services/auth';
+
+type SettingsTab = 'profile' | 'security';
 
 export function Settings() {
-  const { language, dispatch } = useLanguage();
-  const { t } = useTranslation();
+  const { user, refreshUser } = useAuth();
+
+  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber || '');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const canSavePassword = useMemo(() => {
+    return currentPassword.trim() && newPassword.trim() && confirmPassword.trim();
+  }, [currentPassword, newPassword, confirmPassword]);
+
+  const handleProfileSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      return;
+    }
+
+    setError(null);
+    setMessage(null);
+    setIsSavingProfile(true);
+
+    try {
+      let uploadedAvatarId: number | undefined;
+      if (avatarFile) {
+        const uploaded = await uploadAvatar(avatarFile);
+        uploadedAvatarId = uploaded.id;
+      }
+
+      const payload: UpdateProfilePayload = {
+        displayName: displayName.trim() || undefined,
+        bio: bio.trim() || undefined,
+        phoneNumber: phoneNumber.trim() || undefined,
+      };
+
+      if (uploadedAvatarId) {
+        payload.avatar = uploadedAvatarId;
+      }
+
+      await updateProfile(user.id, payload);
+      await refreshUser();
+      setAvatarFile(null);
+      setMessage('Profile settings saved.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile.');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setMessage(null);
+
+    if (!canSavePassword) {
+      setError('Please fill in all password fields.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Password confirmation does not match.');
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      const payload: ChangePasswordPayload = {
+        currentPassword,
+        password: newPassword,
+        passwordConfirmation: confirmPassword,
+      };
+      await changePassword(payload);
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setMessage('Password updated successfully.');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to change password.');
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
   return (
-    <div className="page-container max-w-4xl space-y-8">
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-bold text-navy-900 dark:text-white">
-          {t('accountSettings', { defaultValue: 'Account Settings' })}
-        </h1>
-        <p className="text-navy-400 dark:text-navy-300 mt-1">
-          {t('accountSettingsDesc', { defaultValue: 'Manage your preferences and security' })}
-        </p>
-      </div>
+    <div className="max-w-3xl mx-auto px-6 py-12">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Settings</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Settings Navigation (Desktop) */}
-        <div className="hidden md:block space-y-2">
-          <button className="w-full flex items-center gap-3 px-4 py-3 bg-white dark:bg-navy-800 text-navy-900 dark:text-white font-semibold rounded-lg shadow-sm border border-surface-200 dark:border-navy-700">
-            <Lock className="w-5 h-5 text-navy-500 dark:text-navy-300" /> {t('security', { defaultValue: 'Security' })}
+        <div className="flex gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-2 rounded-lg ${activeTab === 'profile' ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200'}`}
+          >
+            Profile
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-navy-500 dark:text-navy-300 font-medium rounded-lg hover:bg-surface-200 dark:hover:bg-navy-700 transition-colors">
-            <Globe className="w-5 h-5" /> {t('preferences', { defaultValue: 'Preferences' })}
-          </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-navy-500 dark:text-navy-300 font-medium rounded-lg hover:bg-surface-200 dark:hover:bg-navy-700 transition-colors">
-            <Bell className="w-5 h-5" /> {t('notificationsTab', { defaultValue: 'Notifications' })}
+          <button
+            type="button"
+            onClick={() => setActiveTab('security')}
+            className={`px-4 py-2 rounded-lg ${activeTab === 'security' ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-200'}`}
+          >
+            Security
           </button>
         </div>
 
-        {/* Settings Content */}
-        <div className="md:col-span-2 space-y-8">
-          {/* Password Section */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 10
-            }}
-            animate={{
-              opacity: 1,
-              y: 0
-            }}
-            className="card p-6 md:p-8">
-            
-            <div className="flex items-center gap-3 mb-6 border-b border-surface-200 dark:border-navy-700 pb-4">
-              <div className="p-2 bg-navy-50 dark:bg-navy-800 rounded-lg text-navy-500 dark:text-navy-300">
-                <Shield className="w-5 h-5" />
-              </div>
-              <h2 className="text-lg font-bold text-navy-900 dark:text-white">
-                {t('changePasswordTitle', { defaultValue: 'Change Password' })}
-              </h2>
+        {message && <p className="text-sm text-green-600 mb-4">{message}</p>}
+        {error && <p className="text-sm text-red-600 mb-4">{error}</p>}
+
+        {activeTab === 'profile' && (
+          <form onSubmit={handleProfileSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
+              <input
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                placeholder="Your display name"
+              />
             </div>
 
-            <form className="space-y-5">
-              <div>
-                <label className="block text-sm font-semibold text-navy-900 dark:text-white mb-2">
-                  {t('currentPassword', { defaultValue: 'Current Password' })}
-                </label>
-                <input
-                  type="password"
-                  className="w-full bg-surface-50 dark:bg-navy-800 border border-surface-200 dark:border-navy-700 text-navy-900 dark:text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-navy-500 transition-shadow" />
-                
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-navy-900 dark:text-white mb-2">
-                  {t('newPassword', { defaultValue: 'New Password' })}
-                </label>
-                <input
-                  type="password"
-                  className="w-full bg-surface-50 dark:bg-navy-800 border border-surface-200 dark:border-navy-700 text-navy-900 dark:text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-navy-500 transition-shadow" />
-                
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-navy-900 dark:text-white mb-2">
-                  {t('confirmNewPassword', { defaultValue: 'Confirm New Password' })}
-                </label>
-                <input
-                  type="password"
-                  className="w-full bg-surface-50 dark:bg-navy-800 border border-surface-200 dark:border-navy-700 text-navy-900 dark:text-white rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-navy-500 transition-shadow" />
-                
-              </div>
-              <div className="pt-2">
-                <button
-                  type="button"
-                  className="btn-primary flex items-center gap-2">
-                  
-                  {t('updatePasswordBtn', { defaultValue: 'Update Password' })}
-                </button>
-              </div>
-            </form>
-          </motion.div>
-
-          {/* Preferences Section */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 10
-            }}
-            animate={{
-              opacity: 1,
-              y: 0
-            }}
-            transition={{
-              delay: 0.1
-            }}
-            className="card p-6 md:p-8">
-            
-            <div className="flex items-center gap-3 mb-6 border-b border-surface-200 dark:border-navy-700 pb-4">
-              <div className="p-2 bg-navy-50 dark:bg-navy-800 rounded-lg text-navy-500 dark:text-navy-300">
-                <Globe className="w-5 h-5" />
-              </div>
-              <h2 className="text-lg font-bold text-navy-900 dark:text-white">
-                {t('languagePreference', { defaultValue: 'Language Preference' })}
-              </h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
+              <input
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                placeholder="Your phone number"
+              />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <label
-                className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${language === 'en' ? 'border-navy-500 bg-navy-50 dark:bg-navy-800' : 'border-surface-200 dark:border-navy-700 hover:border-navy-300 dark:hover:border-navy-500'}`}>
-                
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-navy-900 dark:text-white">English</span>
-                  <input
-                    type="radio"
-                    name="lang"
-                    value="en"
-                    checked={language === 'en'}
-                    onChange={() => dispatch({ type: 'SET_LANGUAGE', payload: 'en' })}
-                    className="w-4 h-4 text-navy-600 focus:ring-navy-500" />
-                  
-                </div>
-                <p className="text-xs text-navy-500 dark:text-navy-300">
-                  {t('englishDesc', { defaultValue: 'Interface will be displayed in English (LTR)' })}
-                </p>
-              </label>
-
-              <label
-                className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${language === 'ar' ? 'border-navy-500 bg-navy-50 dark:bg-navy-800' : 'border-surface-200 dark:border-navy-700 hover:border-navy-300 dark:hover:border-navy-500'}`}>
-                
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-navy-900 dark:text-white font-['Cairo']">
-                    العربية
-                  </span>
-                  <input
-                    type="radio"
-                    name="lang"
-                    value="ar"
-                    checked={language === 'ar'}
-                    onChange={() => dispatch({ type: 'SET_LANGUAGE', payload: 'ar' })}
-                    className="w-4 h-4 text-navy-600 focus:ring-navy-500" />
-                  
-                </div>
-                <p className="text-xs text-navy-500 dark:text-navy-300">
-                  {t('arabicDesc', { defaultValue: 'Interface will be displayed in Arabic (RTL)' })}
-                </p>
-              </label>
-            </div>
-          </motion.div>
-
-          {/* Notifications Section */}
-          <motion.div
-            initial={{
-              opacity: 0,
-              y: 10
-            }}
-            animate={{
-              opacity: 1,
-              y: 0
-            }}
-            transition={{
-              delay: 0.2
-            }}
-            className="card p-6 md:p-8">
-            
-            <div className="flex items-center gap-3 mb-6 border-b border-surface-200 dark:border-navy-700 pb-4">
-              <div className="p-2 bg-navy-50 dark:bg-navy-800 rounded-lg text-navy-500 dark:text-navy-300">
-                <Bell className="w-5 h-5" />
-              </div>
-              <h2 className="text-lg font-bold text-navy-900 dark:text-white">
-                {t('notificationsTab', { defaultValue: 'Notifications' })} Preferences
-              </h2>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                rows={4}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                placeholder="Write something about yourself"
+              />
             </div>
 
-            <div className="space-y-6">
-              {[
-              {
-                title: t('emailNotifsTitle', { defaultValue: 'Email Notifications' }),
-                desc: t('emailNotifsDesc', { defaultValue: 'Receive updates about your requests and academic standing via email.' })
-              },
-              {
-                title: t('smsAlertsTitle', { defaultValue: 'SMS Alerts' }),
-                desc: t('smsAlertsDesc', { defaultValue: 'Get text messages for urgent announcements and schedule changes.' })
-              },
-              {
-                title: t('portalNotifsTitle', { defaultValue: 'Portal Notifications' }),
-                desc: t('portalNotifsDesc', { defaultValue: 'Show in-app notification badges when you are logged in.' })
-              }].
-              map((item, idx) =>
-              <div key={idx} className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-bold text-navy-900 dark:text-white">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-navy-500 dark:text-navy-400 mt-0.5">{item.desc}</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                    type="checkbox"
-                    className="sr-only peer"
-                    defaultChecked={idx !== 1} />
-                  
-                    <div className="w-11 h-6 bg-surface-300 dark:bg-navy-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-navy-300 dark:peer-focus:ring-navy-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-academic-500"></div>
-                  </label>
-                </div>
-              )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Avatar</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                className="block w-full text-sm text-gray-700 dark:text-gray-300"
+              />
             </div>
-          </motion.div>
 
-          <div className="flex justify-end pt-4">
-            <button className="btn-accent flex items-center gap-2 px-8 text-white bg-green-500 hover:bg-green-600 py-3 rounded-xl shadow-md">
-              <Save className="w-4 h-4" /> {t('saveAllSettings', { defaultValue: 'Save All Settings' })}
+            <button
+              type="submit"
+              disabled={isSavingProfile}
+              className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white disabled:opacity-60"
+            >
+              {isSavingProfile ? 'Saving...' : 'Save Profile'}
             </button>
-          </div>
-        </div>
-      </div>
-    </div>);
+          </form>
+        )}
 
+        {activeTab === 'security' && (
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm New Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={!canSavePassword || isSavingPassword}
+              className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white disabled:opacity-60"
+            >
+              {isSavingPassword ? 'Updating...' : 'Update Password'}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
 }

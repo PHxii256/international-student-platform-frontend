@@ -36,7 +36,23 @@ export function useCmsData<T>(
         }
       } catch (err) {
         if (isMounted) {
-          const error = err instanceof Error ? err : new Error(String(err));
+          let readableMessage = 'Failed to load content.';
+
+          if (err instanceof Error && err.message) {
+            readableMessage = err.message;
+          } else if (typeof err === 'string') {
+            readableMessage = err;
+          } else if (err && typeof err === 'object') {
+            const maybeErr = err as any;
+            readableMessage =
+              maybeErr?.message ||
+              maybeErr?.error?.message ||
+              maybeErr?.response?.data?.error?.message ||
+              maybeErr?.response?.data?.message ||
+              readableMessage;
+          }
+
+          const error = new Error(readableMessage);
           setState({
             data: null,
             loading: false,

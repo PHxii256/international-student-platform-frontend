@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import './MustHeader.scss';
 import { MENU_ITEMS, MenuItem } from './navigation.data';
+import { useAuth } from '../../context/AuthContext';
 
 export interface MustHeaderProps {
   language: string;
@@ -21,9 +22,9 @@ export const MustHeader: React.FC<MustHeaderProps> = ({ language, onToggleLangua
   const [mobileActiveItem, setMobileActiveItem] = useState<MenuItem | null>(null);
   const [mobileActiveSubItem, setMobileActiveSubItem] = useState<MenuItem | null>(null);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // Mock logged in wrapper
-  const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout, isAdmin } = useAuth();
+  const strapiAdminUrl = `${(import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337').replace(/\/$/, '')}/admin`;
 
   // Close menus on route change
   useEffect(() => {
@@ -88,9 +89,8 @@ export const MustHeader: React.FC<MustHeaderProps> = ({ language, onToggleLangua
     onToggleLanguage(currentLangStr === 'en' ? 'ar' : 'en');
   };
 
-  const logout = () => {
-    setIsLoggedIn(false);
-    navigate('/login');
+  const handleLogout = () => {
+    logout();
     closeMenus();
   };
 
@@ -100,7 +100,7 @@ export const MustHeader: React.FC<MustHeaderProps> = ({ language, onToggleLangua
         <div className="header-container">
           
           {/* Left Logo */}
-          <Link to="/dashboard" className="logo-link" title={t('home')}>
+          <Link to="/" className="logo-link" title={t('home')}>
             <img src="/assets/1740307130_140_87669_group1000004290.svg" alt="MUST Logo" className="logo-img" />
           </Link>
 
@@ -275,16 +275,40 @@ export const MustHeader: React.FC<MustHeaderProps> = ({ language, onToggleLangua
               {(typeof language === 'string' ? language : 'en') === 'en' ? 'ع' : 'EN'}
             </button>
 
-            {isLoggedIn ? (
-              <button className="btn-auth logout-btn ms-2" onClick={logout}>
-                <i className="fas fa-sign-out-alt"></i>
-                <span>{t('signOut')}</span>
-              </button>
+            {!user ? (
+              <>
+                <Link to="/login" className="btn-auth login-btn ms-2" style={{ textDecoration: 'none' }}>
+                  <i className="fas fa-user-circle"></i>
+                  <span>{t('signIn', { defaultValue: 'Sign In' })}</span>
+                </Link>
+                <Link to="/register" className="btn-auth login-btn ms-2" style={{ textDecoration: 'none' }}>
+                  <i className="fas fa-user-plus"></i>
+                  <span>{t('register', { defaultValue: 'Register' })}</span>
+                </Link>
+              </>
             ) : (
-              <Link to="/login" className="btn-auth login-btn ms-2" style={{textDecoration: 'none'}}>
-                <i className="fas fa-user-circle"></i>
-                <span>{t('signIn')}</span>
-              </Link>
+              <>
+                {isAdmin && (
+                  <a
+                    href={strapiAdminUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-auth login-btn ms-2"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    <i className="fas fa-gauge-high"></i>
+                    <span>{t('dashboard', { defaultValue: 'Dashboard' })}</span>
+                  </a>
+                )}
+                <Link to="/profile" className="btn-auth login-btn ms-2" style={{ textDecoration: 'none' }}>
+                  <i className="fas fa-user"></i>
+                  <span>{user.displayName || user.username}</span>
+                </Link>
+                <button className="btn-auth logout-btn ms-2" onClick={handleLogout}>
+                  <i className="fas fa-sign-out-alt"></i>
+                  <span>{t('signOut')}</span>
+                </button>
+              </>
             )}
 
             {/* Mobile Toggle */}
@@ -400,6 +424,29 @@ export const MustHeader: React.FC<MustHeaderProps> = ({ language, onToggleLangua
               </li>
             ))}
           </ul>
+
+          <div style={{ borderTop: '1px solid #2d4278', marginTop: '12px', paddingTop: '12px' }}>
+            {!user ? (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Link to="/login" className="mobile-nav-link" onClick={closeMenus}>Login</Link>
+                <Link to="/register" className="mobile-nav-link" onClick={closeMenus}>Register</Link>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <Link to="/profile" className="mobile-nav-link" onClick={closeMenus}>
+                  {user.displayName || user.username}
+                </Link>
+                {isAdmin && (
+                  <a href={strapiAdminUrl} target="_blank" rel="noopener noreferrer" className="mobile-nav-link" onClick={closeMenus}>
+                    Dashboard
+                  </a>
+                )}
+                <button className="mobile-nav-link" onClick={handleLogout} style={{ textAlign: 'left', background: 'transparent', border: 'none' }}>
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>

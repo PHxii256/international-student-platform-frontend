@@ -10,7 +10,7 @@ export function LinksBar({ className = '' }: LinksBarProps) {
   const { t } = useTranslation();
 
   const links: Array<{ id: string; label: string }> = [
-    { id: 'dashboard', label: t('home') || 'Home' },
+    { id: '', label: t('home') || 'Home' },
     { id: 'academics', label: t('academics') || 'Academics' },
     { id: 'questionnaires', label: t('questionnaires') || 'Questionnaires' },
     { id: 'resources', label: t('resources') || 'Resources' },

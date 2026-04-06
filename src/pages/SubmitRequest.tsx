@@ -149,7 +149,7 @@ export function SubmitRequest() {
           <div className="pt-6 border-t border-gray-200 dark:border-navy-700 flex justify-end gap-4">
             <button
               type="button"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/')}
               className="btn-secondary">
               {t('cancel', { defaultValue: 'Cancel' })}
             </button>
