@@ -6,6 +6,8 @@ import { Footer } from './components/Footer';
 import { HeroSlider } from './components/HeroSlider';
 import { FloatingSocialBar } from './components/FloatingSocialBar';
 import { LinksBar } from './components/LinksBar';
+import ChatWidget from './components/ChatWidget'; // <-- 1. IMPORT ADDED HERE
+
 // Pages
 import {Academics} from "./pages/Accademics/Academics.tsx";
 import Questionnaires from './pages/Questionnaires';
@@ -82,6 +84,7 @@ function AppContent() {
       </main>
       <Footer darkMode={darkMode} />
       <FloatingSocialBar />
+      <ChatWidget /> {/* <-- 2. COMPONENT DROPPED HERE */}
     </div>
   );
 }
@@ -99,4 +102,3 @@ export function App() {
     </AuthProvider>
   );
 }
-
