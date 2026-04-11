@@ -66,6 +66,7 @@ export function ChatPanel() {
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const [conversationQuery, setConversationQuery] = useState('');
   const [adminQuery, setAdminQuery] = useState('');
+  const [draftMessage, setDraftMessage] = useState('');
   const { user } = useAuth();
   const currentUserRole = getCurrentUserRole(user);
   const {
@@ -222,14 +223,18 @@ export function ChatPanel() {
   const onComposerSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const formData = new FormData(event.currentTarget);
-    const nextMessage = String(formData.get('chat-message') ?? '').trim();
+    const nextMessage = draftMessage.trim();
     if (!nextMessage) {
       return;
     }
 
-    await sendMessage(nextMessage);
-    event.currentTarget.reset();
+    setDraftMessage('');
+
+    try {
+      await sendMessage(nextMessage);
+    } catch {
+      setDraftMessage(nextMessage);
+    }
   };
 
   return createPortal(
@@ -473,6 +478,8 @@ export function ChatPanel() {
                         rows={2}
                         placeholder="Write a message..."
                         aria-label="Write a message"
+                        value={draftMessage}
+                        onChange={(event) => setDraftMessage(event.target.value)}
                         className="min-h-[52px] flex-1 resize-none rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-secondary focus:ring-2 focus:ring-secondary/20 dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-500"
                         onKeyDown={(event) => {
                           if (event.key === 'Enter' && !event.shiftKey) {
