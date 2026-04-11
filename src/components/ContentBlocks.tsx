@@ -35,7 +35,6 @@ interface ContentBlockProps {
 function ContentBlock({ block }: ContentBlockProps) {
   const component = block.__component;
   const safeContent = component === 'shared.rich-text' ? sanitizeHtml(block.body) : '';
-  const looksLikeHtml = component === 'shared.rich-text' ? /<\/?[a-z][\s\S]*>/i.test(safeContent) : false;
   const renderHeading = (Tag: 'h1' | 'h2' | 'h3', className: string) => {
     return ({ children, ...props }: any) => {
       const text = getTextContent(children);
@@ -71,17 +70,6 @@ function ContentBlock({ block }: ContentBlockProps) {
 
   switch (component) {
     case 'shared.rich-text':
-      if (looksLikeHtml) {
-        return (
-          <div
-            className="prose prose-base md:prose-lg max-w-none dark:prose-invert"
-            dangerouslySetInnerHTML={{
-              __html: safeContent
-            }}
-          />
-        );
-      }
-
       return (
         <div className="max-w-none">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>

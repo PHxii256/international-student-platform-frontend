@@ -13,6 +13,14 @@ interface CmsSingleTypePageProps<T extends CmsSingleTypePageData> {
   fallbackSubtitle?: string;
 }
 
+const slugifyAnchor = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/["']/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
 export function CmsSingleTypePage<T extends CmsSingleTypePageData>({
   fetcher,
   fallbackTitle,
@@ -33,7 +41,20 @@ export function CmsSingleTypePage<T extends CmsSingleTypePageData>({
     }
 
     const scrollToAnchor = () => {
-      const element = document.getElementById(anchor);
+      let element = document.getElementById(anchor);
+
+      // Rich-text HTML blocks may render headings without ids; derive one from heading text.
+      if (!element) {
+        const heading = Array.from(document.querySelectorAll<HTMLElement>('h1, h2, h3, h4, h5, h6')).find(
+          (item) => slugifyAnchor(item.textContent || '') === anchor,
+        );
+
+        if (heading) {
+          heading.id = anchor;
+          element = heading;
+        }
+      }
+
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
