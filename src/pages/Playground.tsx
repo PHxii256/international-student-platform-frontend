@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import AcademicStaffProfileCard, { AcademicStaffProfileCardProps } from '../components/AcademicStaffProfileCard';
 import EventsNewsSection from '../components/EventsNewsCarousels';
+import Schedules from './Accademics/homepage/Schedules'; // Ensure this path is correct for your file
 
 import NewStudyPlanResources from '../components/NewStudyPlanResources';
 import { postgradStudyPlanConfig, undergradStudyPlanConfig } from '../components/newStudyPlanResourcesMockData';
@@ -16,6 +17,14 @@ export default function Playground() {
   const [undergradConfig, setUndergradConfig] = useState<any>(undergradStudyPlanConfig);
   const [postgradConfig, setPostgradConfig] = useState<any>(postgradStudyPlanConfig);
   
+  // NEW: State for live Schedule links
+  const [scheduleLinks, setScheduleLinks] = useState({
+    semester: '#',
+    quiz1: '#',
+    quiz2: '#',
+    finals: '#'
+  });
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -23,19 +32,28 @@ export default function Playground() {
       try {
         const baseUrl = import.meta.env.VITE_CMS_URL || import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
         
-        const [staffRes, eventsRes, newsRes, studyPlansRes] = await Promise.all([
+        // Concurrent fetch for ALL collections including schedules
+        const [staffRes, eventsRes, newsRes, studyPlansRes, schedulesRes] = await Promise.all([
           fetch(`${baseUrl}/api/academic-staffs?populate=*`),
           fetch(`${baseUrl}/api/events?populate=*`),
           fetch(`${baseUrl}/api/news-items?populate=*`),
-          fetch(`${baseUrl}/api/study-plans?populate=*`)
+          fetch(`${baseUrl}/api/study-plans?populate=*`),
+          fetch(`${baseUrl}/api/schedules?populate=*`)
         ]);
 
-        const [staffJson, eventsJson, newsJson, studyPlansJson] = await Promise.all([
+        const [staffJson, eventsJson, newsJson, studyPlansJson, schedulesJson] = await Promise.all([
           staffRes.json(),
           eventsRes.json(),
           newsRes.json(),
-          studyPlansRes.json()
+          studyPlansRes.json(),
+          schedulesRes.json()
         ]);
+
+        // Helper function moved to top of try block so all sections can use it
+        const getFileUrl = (mediaField: any) => {
+          const path = mediaField?.url || mediaField?.data?.attributes?.url;
+          return path ? (path.startsWith('http') ? path : `${baseUrl}${path}`) : '#';
+        };
 
         // 1. Format Staff
         if (staffJson.data) {
@@ -103,17 +121,21 @@ export default function Playground() {
           setNewsList(formattedNews);
         }
 
-        // 4. Format Study Plans
+        // 4. Format Schedules (NEW LIVE DATA)
+        if (schedulesJson.data && schedulesJson.data.length > 0) {
+          const sAttrs = schedulesJson.data[0].attributes || schedulesJson.data[0];
+          setScheduleLinks({
+            semester: getFileUrl(sAttrs.T_undergrad_semester_schedule),
+            quiz1: getFileUrl(sAttrs.IT_undergrad_quiz_1_schedule),
+            quiz2: getFileUrl(sAttrs.IT_undergrad_quiz_2_schedule),
+            finals: getFileUrl(sAttrs.IT_undergrad_finals_schedule)
+          });
+        }
+
+        // 5. Format Study Plans
         if (studyPlansJson.data && studyPlansJson.data.length > 0) {
           const attrs = studyPlansJson.data[0].attributes || studyPlansJson.data[0];
 
-          // Safely extracts URL for single files
-          const getFileUrl = (mediaField: any) => {
-            const path = mediaField?.url || mediaField?.data?.attributes?.url;
-            return path ? (path.startsWith('http') ? path : `${baseUrl}${path}`) : '#';
-          };
-
-          // Safely extracts URLs and Original Filenames for the 'Professional_diplomas' array
           const getMultipleFiles = (mediaArray: any) => {
             const items = mediaArray?.data || mediaArray || [];
             if (!Array.isArray(items)) return [];
@@ -125,7 +147,6 @@ export default function Playground() {
             });
           };
 
-          // Overwrite the Undergrad mock with live Strapi data
           setUndergradConfig({
             mode: 'undergrad-specialties',
             title: 'Study Plans (Undergrad)',
@@ -154,7 +175,6 @@ export default function Playground() {
             },
           });
 
-          // Overwrite the Postgrad mock with live Strapi data
           setPostgradConfig({
             mode: 'degree-tracks',
             title: 'Study Plans (Postgrad)',
@@ -229,6 +249,16 @@ export default function Playground() {
         />
       </div>
 
+      {/* --- LIVE SCHEDULES SECTION --- */}
+      <div className="mt-12">
+        <Schedules 
+          semesterUrl={scheduleLinks.semester}
+          quiz1Url={scheduleLinks.quiz1}
+          quiz2Url={scheduleLinks.quiz2}
+          finalsUrl={scheduleLinks.finals}
+        />
+      </div>
+
       {/* --- Dynamic Study Plans Section --- */}
       <section className="mt-12 bg-white py-12">
         <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-8 lg:px-10">
@@ -236,7 +266,6 @@ export default function Playground() {
             Study Plans (Connected to Strapi)
           </h2>
           <div className="space-y-8">
-            {/* Feed the dynamically generated states directly into his components */}
             <NewStudyPlanResources config={undergradConfig} />
             <NewStudyPlanResources config={postgradConfig} />
             <ResourcesComponent config={mockGenericReources} />

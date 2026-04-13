@@ -1,130 +1,72 @@
+import { useEffect, useState } from 'react';
+import NewStudyPlanResources from '../../../components/NewStudyPlanResources';
+import ResourcesComponent from '../../../components/ResourcesComponent';
+import { postgradStudyPlanConfig, undergradStudyPlanConfig } from '../../../components/newStudyPlanResourcesMockData';
+import { mockGenericReources } from '../../../components/genericResourcesMockData';
 
 export default function StudyPlans() {
+  const [undergradConfig, setUndergradConfig] = useState<any>(undergradStudyPlanConfig);
+  const [postgradConfig, setPostgradConfig] = useState<any>(postgradStudyPlanConfig);
+
+  useEffect(() => {
+    const fetchStudyPlans = async () => {
+      try {
+        const baseUrl = import.meta.env.VITE_CMS_URL || import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
+        const res = await fetch(`${baseUrl}/api/study-plans?populate=*`);
+        const json = await res.json();
+
+        if (json.data && json.data.length > 0) {
+          const attrs = json.data[0].attributes || json.data[0];
+
+          const getFileUrl = (field: any) => {
+            const path = field?.url || field?.data?.attributes?.url;
+            return path ? (path.startsWith('http') ? path : `${baseUrl}${path}`) : '#';
+          };
+
+          const getMultipleFiles = (mediaArray: any) => {
+            const items = mediaArray?.data || mediaArray || [];
+            if (!Array.isArray(items)) return [];
+            return items.map((file: any, index: number) => {
+              const path = file?.attributes?.url || file?.url;
+              const finalPath = path ? (path.startsWith('http') ? path : `${baseUrl}${path}`) : '#';
+              const name = file?.attributes?.name || file?.name || `Professional Diploma ${index + 1}`;
+              return { id: `prof-${index}`, title: name, url: finalPath };
+            });
+          };
+
+          setUndergradConfig({
+            mode: 'undergrad-specialties',
+            title: 'Study Plans (Undergrad)',
+            specialties: {
+              cs: { label: 'Computer Science', resourcesByCurriculum: { old: attrs.Undergrad_CS_Old_Curriculum ? [{ id: 'ug-cs-old', title: 'CS - Old', url: getFileUrl(attrs.Undergrad_CS_Old_Curriculum) }] : [], new: attrs.Undergrad_CS_New_Curriculum ? [{ id: 'ug-cs-new', title: 'CS - New', url: getFileUrl(attrs.Undergrad_CS_New_Curriculum) }] : [] } },
+              is: { label: 'Information System', resourcesByCurriculum: { old: attrs.Undergrad_IS_Old_Curriculum ? [{ id: 'ug-is-old', title: 'IS - Old', url: getFileUrl(attrs.Undergrad_IS_Old_Curriculum) }] : [], new: attrs.Undergrad_IS_New_Curriculum ? [{ id: 'ug-is-new', title: 'IS - New', url: getFileUrl(attrs.Undergrad_IS_New_Curriculum) }] : [] } },
+              ai: { label: 'Artificial Intelligence', resourcesByCurriculum: { old: attrs.Undergrad_AI_Old_Curriculum ? [{ id: 'ug-ai-old', title: 'AI - Old', url: getFileUrl(attrs.Undergrad_AI_Old_Curriculum) }] : [], new: attrs.Undergrad_AI_New_Curriculum ? [{ id: 'ug-ai-new', title: 'AI - New', url: getFileUrl(attrs.Undergrad_AI_New_Curriculum) }] : [] } },
+            },
+          });
+
+          setPostgradConfig({
+            mode: 'degree-tracks',
+            title: 'Study Plans (Postgrad)',
+            tracks: {
+              msc: { type: 'research', label: 'M. SC', resourcesBySpecialty: { CS: attrs.Postgrad_CS ? [{ id: 'pg-msc-cs', title: 'MSc Computer Science', url: getFileUrl(attrs.Postgrad_CS) }] : [], IS: attrs.Postgrad_AI ? [{ id: 'pg-msc-is', title: 'MSc Artificial Intelligence', url: getFileUrl(attrs.Postgrad_AI) }] : [] } },
+              phd: { type: 'research', label: 'PH.D', resourcesBySpecialty: { CS: attrs.Postgrad_CS ? [{ id: 'pg-phd-cs', title: 'PhD Computer Science', url: getFileUrl(attrs.Postgrad_CS) }] : [], IS: attrs.Postgrad_AI ? [{ id: 'pg-phd-is', title: 'PhD Artificial Intelligence', url: getFileUrl(attrs.Postgrad_AI) }] : [] } },
+              professional: { type: 'professional', label: 'Professional Degrees', resources: getMultipleFiles(attrs.Professional_diplomas) },
+            },
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching study plans:', error);
+      }
+    };
+    fetchStudyPlans();
+  }, []);
+
   return (
-    <section className="w-full bg-[#0b132b] py-20 px-6 lg:px-24 border-t border-slate-800">
-      <div className="max-w-7xl mx-auto flex flex-col items-center">
-        <div className="text-center mb-16 max-w-3xl">
-          <h2 className="text-white text-4xl lg:text-5xl font-bold mb-6">
-            Study Plans & Credit Hours
-          </h2>
-          <p className="text-gray-400 text-lg lg:text-xl">
-            MUST operates on a modern Credit Hour System, giving you the flexibility to manage your academic load while ensuring you meet all graduation requirements.
-          </p>
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8 w-full items-start">
-          {/* Left Column */}
-          <div className="flex-1 w-full space-y-6">
-            {/* Info Card 1 */}
-            <div className="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl">
-              <div className="flex items-center space-x-3 mb-6">
-                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-                <h3 className="text-white text-2xl font-bold">The Credit Hour System</h3>
-              </div>
-              <p className="text-gray-300 text-lg mb-8">
-                Instead of fixed yearly curriculums, your degree is measured in credit hours. One credit hour typically represents one hour of lecture or two hours of practical/lab work per week over a semester.
-              </p>
-              
-              <div className="space-y-6">
-                <div className="flex items-start space-x-4">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></div>
-                  <p className="text-gray-300"><strong className="text-white">Standard Load:</strong> 12 to 18 credit hours per semester.</p>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></div>
-                  <p className="text-gray-300"><strong className="text-white">Duration:</strong> Most bachelor's programs require 130-160 total credits (approx. 4-5 years).</p>
-                </div>
-                <div className="flex items-start space-x-4">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></div>
-                  <p className="text-gray-300"><strong className="text-white">Prerequisites:</strong> Advanced courses require successful completion of foundational courses.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Info Card 2 */}
-            <div className="bg-indigo-900 p-8 rounded-2xl border border-indigo-800 shadow-xl">
-              <h3 className="text-white text-2xl font-bold mb-4">Need your specific plan?</h3>
-              <p className="text-indigo-200 text-lg mb-8">
-                Study plans vary significantly between faculties (e.g., Medicine vs. Business). Download the comprehensive guide for your specific faculty.
-              </p>
-              <button className="px-6 py-3 w-full bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition flex justify-center items-center">
-                Download Full Study Plan
-                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column (Table) */}
-          <div className="flex-1 w-full bg-slate-800 rounded-2xl border border-slate-700 shadow-xl overflow-hidden">
-            <div className="bg-slate-700/50 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-700">
-              <div className="flex items-center space-x-3 mb-4 sm:mb-0">
-                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                </svg>
-                <h3 className="text-white text-xl font-bold">Sample Study Plan (First Year)</h3>
-              </div>
-              <span className="px-4 py-1.5 bg-blue-900/50 text-blue-300 text-sm font-medium rounded-full border border-blue-800/50">
-                Example Only
-              </span>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-gray-300 border-collapse">
-                <thead className="bg-slate-800 border-b border-slate-700 text-sm">
-                  <tr>
-                    <th className="px-6 py-4 font-bold">Year</th>
-                    <th className="px-6 py-4 font-bold">Semester</th>
-                    <th className="px-6 py-4 font-bold">Course Name</th>
-                    <th className="px-6 py-4 font-bold text-center">Credits</th>
-                  </tr>
-                </thead>
-                <tbody className="text-sm">
-                  <tr className="border-b border-slate-700/50">
-                    <td className="px-6 py-4 text-white font-medium" rowSpan={4}>Year 1</td>
-                    <td className="px-6 py-4">Fall</td>
-                    <td className="px-6 py-4">English Language I</td>
-                    <td className="px-6 py-4 text-center font-semibold">3</td>
-                  </tr>
-                  <tr className="border-b border-slate-700/50">
-                    <td className="px-6 py-4">Fall</td>
-                    <td className="px-6 py-4">Introduction to Computer Science</td>
-                    <td className="px-6 py-4 text-center font-semibold">3</td>
-                  </tr>
-                  <tr className="border-b border-slate-700 border-b-2">
-                    <td className="px-6 py-4">Fall</td>
-                    <td className="px-6 py-4">Mathematics I</td>
-                    <td className="px-6 py-4 text-center font-semibold">4</td>
-                  </tr>
-                  <tr className="border-b border-slate-700/50">
-                    <td className="px-6 py-4">Spring</td>
-                    <td className="px-6 py-4">English Language II</td>
-                    <td className="px-6 py-4 text-center font-semibold">3</td>
-                  </tr>
-                  <tr className="border-b border-slate-700/50">
-                    <td className="px-6 py-4">Year 1</td>
-                    <td className="px-6 py-4">Spring</td>
-                    <td className="px-6 py-4">Physics I</td>
-                    <td className="px-6 py-4 text-center font-semibold">4</td>
-                  </tr>
-                  <tr>
-                    <td className="px-6 py-4">Year 1</td>
-                    <td className="px-6 py-4">Spring</td>
-                    <td className="px-6 py-4">Human Rights & Ethics</td>
-                    <td className="px-6 py-4 text-center font-semibold">2</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div className="bg-slate-700/40 p-5 flex justify-end items-center border-t border-slate-700">
-              <span className="text-white font-semibold mr-4">Total First Year Credits:</span>
-              <span className="text-emerald-500 font-bold text-lg">19</span>
-            </div>
-          </div>
-        </div>
+    <section className="bg-white py-12">
+      <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-8 lg:px-10 space-y-8">
+        <NewStudyPlanResources config={undergradConfig} />
+        <NewStudyPlanResources config={postgradConfig} />
+        <ResourcesComponent config={mockGenericReources} />
       </div>
     </section>
   );

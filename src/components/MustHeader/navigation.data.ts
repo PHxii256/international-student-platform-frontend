@@ -101,8 +101,10 @@ export const MENU_ITEMS: MenuItem[] = [
     translationKey: 'academics',
     externalUrl: 'https://must.edu.eg/academics/',
     children: [
-      { label: 'Undergraduate Studies', translationKey: 'undergraduateStudies', externalUrl: 'https://must.edu.eg/academic_programs/undergraduate-studies/' },
-      { label: 'Post-Graduate Program', translationKey: 'postgraduateProgram', externalUrl: 'https://must.edu.eg/academic_programs/graduate-studies/' },
+      { label: 'Academic Staff', translationKey: 'academicStaff', routerLink: '/academics' },
+      { label: 'Schedules', translationKey: 'schedules', routerLink: '/schedules' },
+      { label: 'Undergraduate Studies', translationKey: 'undergraduateStudies', routerLink: '/undergraduate' },
+      { label: 'Post-Graduate Program', translationKey: 'postgraduateProgram', routerLink: '/postgraduate' },
       { label: 'Academic Calendar', translationKey: 'academicCalendarTitle', externalUrl: 'https://must.edu.eg/academic-calendar/' },
       { label: 'International Students Affairs Sector', translationKey: 'intlAffairsSector', externalUrl: 'https://must.edu.eg/sectors/international-students-affairs-sector/' }
     ]
@@ -118,8 +120,8 @@ export const MENU_ITEMS: MenuItem[] = [
     translationKey: 'buzz',
     externalUrl: 'https://must.edu.eg/',
     children: [
-      { label: 'MUST Events', translationKey: 'mustEvents', externalUrl: 'https://must.edu.eg/event/' },
-      { label: 'MUST News', translationKey: 'mustNews', externalUrl: 'https://must.edu.eg/news/' },
+      { label: 'MUST Events', translationKey: 'mustEvents', routerLink: '/events' },
+      { label: 'MUST News', translationKey: 'mustNews', routerLink: '/news' },
       { label: 'MUST Blogs', translationKey: 'mustBlogs', externalUrl: 'https://must.edu.eg/blog/' },
       { label: 'Announcements', translationKey: 'announcementsNav', externalUrl: 'https://must.edu.eg/anouncement/' }
     ]
