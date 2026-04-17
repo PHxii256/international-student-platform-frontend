@@ -138,31 +138,42 @@ export default function NewStudyPlanResources({ config }: NewStudyPlanResourcesP
       : Boolean(activeTrack || activeSpecialty);
 
   const handleGoBack = () => {
+    if (activeCurriculum) {
+      setActiveCurriculum(null);
+      return;
+    }
+    if (activeSpecialty) {
+      setActiveSpecialty(null);
+      return;
+    }
     setActiveTrack(null);
-    setActiveSpecialty(null);
     setActiveUndergradSpecialty(null);
-    setActiveCurriculum(null);
   };
 
-  const tileButtonBase = 'group flex flex-col items-center justify-center gap-4 rounded-xl border border-slate-100 bg-white p-10 text-center shadow-[0px_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 hover:border-slate-200 dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-[0px_4px_20px_rgba(0,0,0,0.2)] dark:hover:border-slate-700 dark:hover:bg-slate-800';
+  const tileButtonBase = 'group flex flex-col items-center justify-center gap-4 rounded-xl border border-slate-100 bg-white p-10 text-center shadow-[0px_4px_20px_rgba(0,0,0,0.03)] transition-all duration-300 hover:shadow-[0px_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1 hover:border-slate-200 dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-[0px_4px_20px_rgba(0,0,0,0.2)] dark:hover:border-slate-700 dark:hover:bg-slate-800 w-full sm:w-[320px]';
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm md:p-10 dark:border-slate-700 dark:bg-slate-900">
-      <div className="flex items-center justify-between gap-4">
-        <h3 className="text-3xl font-bold text-slate-900 md:text-3xl dark:text-slate-100">{currentTitle}</h3>
-        {canGoBack && (
-          <button
-            type="button"
-            onClick={handleGoBack}
-            className="shrink-0 rounded-xl border border-slate-300 px-6 py-3 text-base font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
-          >
-            Go Back
-          </button>
-        )}
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-8">
+        <div className="flex justify-start">
+          {canGoBack && (
+            <button
+              type="button"
+              onClick={handleGoBack}
+              className="shrink-0 rounded-xl border border-slate-300 px-6 py-3 text-base font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Go Back
+            </button>
+          )}
+        </div>
+        <h3 className="text-center text-2xl font-bold text-slate-900 md:text-3xl dark:text-slate-100 whitespace-nowrap overflow-hidden text-ellipsis">
+          {currentTitle}
+        </h3>
+        <div></div>
       </div>
 
       {config.mode === 'degree-tracks' && (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="mt-8 flex flex-wrap justify-center gap-5">
           {!activeTrack &&
             trackOrder.map((trackKey) => {
               const track = config.tracks[trackKey];
@@ -183,7 +194,7 @@ export default function NewStudyPlanResources({ config }: NewStudyPlanResourcesP
               );
             })}
 
-          {activeTrack && currentTrack?.type === 'research' &&
+          {activeTrack && currentTrack?.type === 'research' && !activeSpecialty &&
             (['CS', 'IS'] as StudyTrackSpecialty[]).map((specialty) => {
               const isActive = activeSpecialty === specialty;
               const specialtyLabel = studyTrackSpecialtyLabels[specialty];
@@ -209,7 +220,7 @@ export default function NewStudyPlanResources({ config }: NewStudyPlanResourcesP
       )}
 
       {config.mode === 'undergrad-specialties' && (
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="mt-8 flex flex-wrap justify-center gap-5">
           {!activeUndergradSpecialty &&
             undergradSpecialtyOrder.map((specialtyKey) => {
               const specialty = config.specialties[specialtyKey];
@@ -230,7 +241,7 @@ export default function NewStudyPlanResources({ config }: NewStudyPlanResourcesP
               );
             })}
 
-          {activeUndergradSpecialty &&
+          {activeUndergradSpecialty && !activeCurriculum &&
             curriculumOrder.map((curriculum) => {
               const isActive = activeCurriculum === curriculum;
               const label = curriculum === 'old' ? 'Old Curriculum' : 'New Curriculum';
@@ -256,7 +267,7 @@ export default function NewStudyPlanResources({ config }: NewStudyPlanResourcesP
       )}
 
       {resources.length > 0 && (
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="mt-8 flex flex-wrap justify-center gap-6">
           {resources.map((resource) => {
             if (isSharePointVideoLink(resource.url)) {
               const { href, title } = parseSharePointVideoLink(resource.url);
@@ -266,6 +277,7 @@ export default function NewStudyPlanResources({ config }: NewStudyPlanResourcesP
                   key={resource.id}
                   href={href}
                   title={title || 'Video'}
+                  className="w-full sm:w-[400px]"
                 />
               );
             }
@@ -275,6 +287,7 @@ export default function NewStudyPlanResources({ config }: NewStudyPlanResourcesP
                 key={resource.id}
                 title={resource.title}
                 url={resource.url}
+                className="w-full sm:w-[400px]"
               />
             );
           })}

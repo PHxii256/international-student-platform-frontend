@@ -7,30 +7,33 @@ interface PdfResourceCardProps {
 export function PdfResourceCard({ title, url, className = '' }: PdfResourceCardProps) {
   return (
     <div
-      className={`flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800 ${className}`}
+      className={`group relative flex h-full flex-col justify-between rounded-xl bg-white p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.04)] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0px_8px_30px_rgba(0,0,0,0.12)] dark:bg-slate-800 dark:shadow-[0px_4px_20px_rgba(0,0,0,0.2)] ${className}`}
     >
-      <div className="flex-1 dark:border-slate-700/50">
-        <h4 className="text-xl font-semibold text-[#0A2540] dark:text-white">{title}</h4>
-      </div>
-      <hr />
-      <p className="-mb-1 mt-1 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">PDF</p>
-      <div className="flex flex-col items-center gap-3 sm:flex-row">
-        <a
-          href={url}
-          download
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#25325A] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1A2340] sm:w-auto dark:bg-[#34467c] dark:hover:bg-[#2c3d6c]"
-        >
-          <i className="fa-solid fa-download text-lg"></i>
-          Download PDF
-        </a>
+      <div className="mt-2 flex flex-col items-center gap-5 text-center">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#f8f9fc] dark:bg-slate-700/50">
+          <i className="fa-solid fa-file-lines text-[32px] text-[#1e293b] dark:text-slate-300"></i>
+        </div>
+        
         <a
           href={url}
           target="_blank"
           rel="noreferrer"
-          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-[#25325A] bg-white px-6 py-3 text-sm font-semibold text-[#25325A] transition-colors hover:bg-slate-50 sm:w-auto dark:border-slate-400 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+          className="focus:outline-none text-decoration-none"
         >
-          <i className="fa-solid fa-arrow-up-right-from-square text-lg"></i>
-          Open PDF
+          <h4 className="text-[15px] font-bold text-[#1e293b] transition-colors duration-300 group-hover:text-[#27ae60] hover:text-[#27ae60] dark:text-white dark:group-hover:text-[#27ae60] dark:hover:text-[#27ae60]">
+            {title}
+          </h4>
+        </a>
+      </div>
+
+      <div className="mt-8 w-full">
+        <a
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex w-full items-center justify-center rounded-[8px] bg-[#27ae60] px-4 py-3 text-[14px] font-bold text-white transition-colors duration-300 hover:bg-[#219653]"
+        >
+          View File
         </a>
       </div>
     </div>
