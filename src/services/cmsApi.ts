@@ -30,6 +30,7 @@ const TABLES = {
   schedules: getTable('VITE_SUPABASE_SCHEDULES_TABLE', 'schedules'),
   calendars: getTable('VITE_SUPABASE_CALENDARS_TABLE', 'calendars'),
   heroSlides: getTable('VITE_SUPABASE_GALLERY_TABLE', 'photo_gallery'),
+  honorListDocs: getTable('VITE_SUPABASE_STUDENT_HONOR_LIST_TABLE', 'student_honor_list_documents'),
   // Intentionally no default to avoid 404s when this table is not provisioned yet.
   heroMenus: getTable('VITE_SUPABASE_HERO_MENU_TABLE', ''),
 } as const;
@@ -40,6 +41,7 @@ const STORAGE_BUCKETS = {
   news: getTable('VITE_SUPABASE_NEWS_IMAGES_BUCKET', 'news-images'),
   events: getTable('VITE_SUPABASE_EVENT_IMAGES_BUCKET', 'event-images'),
   activities: getTable('VITE_SUPABASE_ACTIVITIES_IMAGES_BUCKET', 'activity-images'),
+  honorList: getTable('VITE_SUPABASE_HONOR_LIST_FILES_BUCKET', 'honor-list-files'),
   studyPlans: getTable('VITE_SUPABASE_STUDY_PLAN_FILES_BUCKET', 'study-plan-files'),
   schedules: getTable('VITE_SUPABASE_SCHEDULE_FILES_BUCKET', 'schedule-files'),
   calendars: getTable('VITE_SUPABASE_CALENDAR_FILES_BUCKET', 'calendar-files'),
@@ -102,6 +104,13 @@ export type StudentResourceItem = {
   thumbnailUrl?: string;
 };
 
+export type HonorListDocumentItem = {
+  id: string;
+  title: string;
+  fileUrl: string;
+  updatedAt: string;
+};
+
 export type AcademicStaffItem = {
   title?: string;
   firstName?: string;
@@ -146,6 +155,7 @@ const DEFAULT_HERO_NAV_TREE: HeroNavTreeItem[] = [
       { title: 'Registeration', url: '/Registeration', target: '_self', accessRole: 'public', children: [] },
       { title: 'Schedules', url: '/schedules', target: '_self', accessRole: 'public', children: [] },
       { title: 'Calendar', url: '/calendar', target: '_self', accessRole: 'public', children: [] },
+      { title: 'Honor List', url: '/honor-list', target: '_self', accessRole: 'public', children: [] },
       { title: 'E-Learning', url: '/e-learning', target: '_self', accessRole: 'public', children: [] },
       { title: 'How To Apply', url: '/how-to-apply', target: '_self', accessRole: 'public', children: [] },
     ],
@@ -592,6 +602,33 @@ export async function getStudentResourcesByCategory(category: string): Promise<S
   });
 }
 
+export async function getHonorListDocuments(): Promise<HonorListDocumentItem[]> {
+  const { data, error } = await supabase
+    .from(TABLES.honorListDocs)
+    .select('*')
+    .order('updated_at', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data || []).map((raw) => {
+    const row = unwrapRow(raw) as Record<string, unknown>;
+    const key = pickString(row.key) || toId(row.id);
+    const filePath = pickString(row.file_path, row.filePath, row.path, row.url);
+
+    return {
+      id: toId(row.id) || key,
+      title:
+        pickString(row.title, row.name) ||
+        (key === 'current' ? 'Honor List' : `Honor List (${key})`),
+      fileUrl: filePath ? getFileUrl(filePath) : '#',
+      updatedAt: pickString(row.updated_at, row.created_at) || '',
+    };
+  }).filter((item) => item.fileUrl !== '#');
+}
+
 export async function getAnnouncements(): Promise<Announcements> {
   return fetchSingle<Announcements>(TABLES.announcements, toFallbackSingleType('Announcements'));
 }
@@ -962,6 +999,8 @@ export function getCmsMediaUrl(path: string): string {
     bucketName = STORAGE_BUCKETS.events;
   } else if (lowerSegment === 'activities' || lowerSegment === 'activity') {
     bucketName = STORAGE_BUCKETS.activities;
+  } else if (lowerSegment === 'honor-list' || lowerSegment === 'honor_list' || lowerSegment === 'honorlist') {
+    bucketName = STORAGE_BUCKETS.honorList;
   } else if (lowerSegment === 'gallery' || lowerSegment === 'photo_gallery') {
     bucketName = STORAGE_BUCKETS.gallery;
   } else if (lowerSegment === 'study-plans' || lowerSegment === 'study_plans' || lowerSegment === 'studyplans') {

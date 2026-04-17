@@ -105,6 +105,7 @@ export const MENU_ITEMS: MenuItem[] = [
       { label: 'Schedules', translationKey: 'schedules', routerLink: '/schedules' },
       { label: 'Undergraduate Studies', translationKey: 'undergraduateStudies', routerLink: '/undergraduate' },
       { label: 'Post-Graduate Program', translationKey: 'postgraduateProgram', routerLink: '/postgraduate' },
+      { label: 'Honor List', translationKey: 'honorList', routerLink: '/honor-list' },
       { label: 'Academic Calendar', translationKey: 'academicCalendarTitle', externalUrl: 'https://must.edu.eg/academic-calendar/' },
       { label: 'International Students Affairs Sector', translationKey: 'intlAffairsSector', externalUrl: 'https://must.edu.eg/sectors/international-students-affairs-sector/' }
     ]

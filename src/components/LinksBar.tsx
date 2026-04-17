@@ -20,6 +20,7 @@ export const STATIC_MENU_ITEMS: MenuItem[] = [
       { label: 'Academic Staff', to: '/academics' },
       { label: 'Undergraduate Programs', to: '/undergraduate' },
       { label: 'Postgraduate Programs', to: '/postgraduate' },
+      { label: 'Honor List', to: '/honor-list' },
       { label: 'Academic Advising', to: '/academic-advising' },
       { label: 'Registeration', to: '/Registeration' },
       { label: 'Schedules', to: '/schedules' },

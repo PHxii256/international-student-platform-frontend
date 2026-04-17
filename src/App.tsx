@@ -18,6 +18,7 @@ import Calendar from "./pages/Accademics/homepage/Calendar";
 import Advising from './pages/Accademics/homepage/Advising';
 import HowToApply from './pages/Accademics/homepage/HowToApply';
 import ELearning from './pages/Accademics/homepage/ELearning';
+import HonorList from './pages/Accademics/homepage/HonorList';
 import Questionnaires from './pages/Questionnaires';
 import { Resources } from './pages/Resources';
 import { Facilities } from './pages/Facilities';
@@ -96,6 +97,7 @@ function AppContent() {
               <Route path="/academic-advising" element={<Advising />} />
               <Route path="/how-to-apply" element={<HowToApply />} />
               <Route path="/e-learning" element={<ELearning />} />
+              <Route path="/honor-list" element={<HonorList />} />
               <Route path="/activities" element={<ActivitiesPage />} />
               <Route path="/cultural" element={<ActivitiesPage />} />
               <Route path="/sports" element={<ActivitiesPage />} />
