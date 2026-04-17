@@ -15,7 +15,7 @@ interface AuthContextValue {
   user: StrapiUser | null;
   token: string | null;
   isLoading: boolean;
-  login: (identifier: string, password: string) => Promise<void>;
+  login: (identifier: string, password: string) => Promise<StrapiUser>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
@@ -129,12 +129,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = async (identifier: string, password: string) => {
+  const login = async (identifier: string, password: string): Promise<StrapiUser> => {
     setIsLoading(true);
     try {
       const auth = await loginRequest(identifier, password);
       setToken(auth.jwt);
       setUser(auth.user);
+      return auth.user;
     } finally {
       setIsLoading(false);
     }

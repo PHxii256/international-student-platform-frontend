@@ -1,14 +1,15 @@
 import { FormEvent, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthCampusLayout, authGlassInputClassName, authPrimaryButtonClassName } from '../components/AuthCampusLayout';
 import { useAuth } from '../context/AuthContext';
 
-type UserChoice = 'visitor' | 'college-member' | null;
+type RegistrationRole = 'visitor' | 'college-member';
 
 export function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
 
-  const [choice, setChoice] = useState<UserChoice>(null);
+  const [roleTab, setRoleTab] = useState<RegistrationRole>('visitor');
   const [displayName, setDisplayName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -19,15 +20,14 @@ export function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canSubmit = useMemo(() => {
-    if (!choice) return false;
     if (!displayName.trim() || !username.trim() || !email.trim() || !password.trim() || !confirmPassword.trim()) {
       return false;
     }
-    if (choice === 'college-member' && !universityId.trim()) {
+    if (roleTab === 'college-member' && !universityId.trim()) {
       return false;
     }
     return true;
-  }, [choice, displayName, username, email, password, confirmPassword, universityId]);
+  }, [roleTab, displayName, username, email, password, confirmPassword, universityId]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -50,8 +50,8 @@ export function Register() {
         email: email.trim(),
         password,
         displayName: displayName.trim(),
-        role: choice,
-        universityId: choice === 'college-member' ? universityId.trim() : undefined,
+        role: roleTab,
+        universityId: roleTab === 'college-member' ? universityId.trim() : undefined,
       });
       navigate('/profile');
     } catch (err) {
@@ -62,55 +62,134 @@ export function Register() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-12">
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Register</h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-6">Create a new account.</p>
+    <AuthCampusLayout maxWidthClass="max-w-2xl">
+      <h1 className="mb-1 text-3xl font-bold tracking-tight text-stone-900 dark:text-white">Register</h1>
+      <p className="mb-5 text-sm text-stone-600 dark:text-stone-300">Create your account — fill in your details below.</p>
 
-        {!choice && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <button
-              type="button"
-              onClick={() => setChoice('visitor')}
-              className="p-5 rounded-xl border border-gray-300 dark:border-slate-700 hover:border-green-500 text-left"
-            >
-              <h2 className="font-semibold text-gray-900 dark:text-white">I am a Visitor</h2>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">General access user</p>
-            </button>
-            <button
-              type="button"
-              onClick={() => setChoice('college-member')}
-              className="p-5 rounded-xl border border-gray-300 dark:border-slate-700 hover:border-green-500 text-left"
-            >
-              <h2 className="font-semibold text-gray-900 dark:text-white">I am a College Member</h2>
-            </button>
+      <div
+        className="mb-6 flex rounded-xl border border-stone-200/80 bg-stone-100/45 p-1 shadow-inner backdrop-blur-sm dark:border-slate-600/60 dark:bg-slate-800/45"
+        role="tablist"
+        aria-label="Account type"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={roleTab === 'visitor'}
+          onClick={() => {
+            setRoleTab('visitor');
+            setError(null);
+            setUniversityId('');
+          }}
+          className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
+            roleTab === 'visitor'
+              ? 'bg-white/95 text-stone-900 shadow-md shadow-stone-900/10 ring-1 ring-stone-200/80 dark:bg-slate-800/95 dark:text-white dark:ring-slate-600/60'
+              : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white'
+          }`}
+        >
+          Visitor
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={roleTab === 'college-member'}
+          onClick={() => {
+            setRoleTab('college-member');
+            setError(null);
+          }}
+          className={`flex-1 rounded-lg py-2.5 text-sm font-semibold transition-all duration-200 ${
+            roleTab === 'college-member'
+              ? 'bg-white/95 text-stone-900 shadow-md shadow-stone-900/10 ring-1 ring-stone-200/80 dark:bg-slate-800/95 dark:text-white dark:ring-slate-600/60'
+              : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white'
+          }`}
+        >
+          College member
+        </button>
+      </div>
+
+      <p className="mb-6 text-sm text-stone-600 dark:text-stone-400">
+        {roleTab === 'visitor'
+          ? 'For general access without a university ID.'
+          : 'For students and staff — university ID is required.'}
+      </p>
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Display name</label>
+          <input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className={authGlassInputClassName}
+            placeholder="Display name"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Username</label>
+          <input
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={authGlassInputClassName}
+            placeholder="Username"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Email</label>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            className={authGlassInputClassName}
+            placeholder="Email"
+          />
+        </div>
+
+        {roleTab === 'college-member' && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">University ID</label>
+            <input
+              value={universityId}
+              onChange={(e) => setUniversityId(e.target.value)}
+              className={authGlassInputClassName}
+              placeholder="University ID"
+            />
           </div>
         )}
 
-        {choice && (
-          <form onSubmit={onSubmit} className="space-y-4">
-            {error && <p className="text-sm text-red-600">{error}</p>}
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Password</label>
+          <input
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            className={authGlassInputClassName}
+            placeholder="Password"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-stone-700 dark:text-stone-300">Confirm password</label>
+          <input
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            type="password"
+            className={authGlassInputClassName}
+            placeholder="Confirm password"
+          />
+        </div>
 
-            <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Display Name" className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white" />
-            <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Username" className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white" />
-            <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white" />
+        <button type="submit" disabled={!canSubmit || isSubmitting} className={`${authPrimaryButtonClassName} mt-1 w-full`}>
+          {isSubmitting ? 'Creating account...' : 'Create account'}
+        </button>
+      </form>
 
-            {choice === 'college-member' && (
-              <input value={universityId} onChange={(e) => setUniversityId(e.target.value)} placeholder="University ID" className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white" />
-            )}
-
-            <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white" />
-            <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" type="password" className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white" />
-
-            <div className="flex gap-3 pt-2">
-              <button type="button" onClick={() => setChoice(null)} className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-200">Back</button>
-              <button type="submit" disabled={!canSubmit || isSubmitting} className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white disabled:opacity-60">
-                {isSubmitting ? 'Creating account...' : 'Create Account'}
-              </button>
-            </div>
-          </form>
-        )}
+      <div className="mt-6 space-y-2 border-t border-stone-200/60 pt-5 text-sm text-stone-600 dark:border-slate-600/50 dark:text-stone-400">
+        <p>
+          Already have an account?{' '}
+          <Link className="font-medium text-emerald-700 underline-offset-2 hover:text-emerald-800 hover:underline dark:text-emerald-400 dark:hover:text-emerald-300" to="/login">
+            Login
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthCampusLayout>
   );
 }
