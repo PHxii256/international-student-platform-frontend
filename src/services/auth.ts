@@ -1,5 +1,5 @@
 import type { User as SupabaseAuthUser } from '@supabase/supabase-js';
-import type { RoleType } from '../constants/roles';
+import { ROLES, type RoleType } from '../constants/roles';
 import { getSupabaseConfigError, supabase } from './supabase';
 
 export interface StrapiRole {
@@ -152,16 +152,78 @@ function buildUser(authUser: SupabaseAuthUser, profile: ProfileRow | null): Stra
   };
 }
 
+async function isAdvisorUser(authUser: SupabaseAuthUser): Promise<boolean> {
+  const candidateEmail = (authUser.email || '').trim().toLowerCase();
+
+  let byIdQuery = supabase
+    .from('advisor_profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq('id', authUser.id)
+    .eq('is_active', true);
+
+  const byIdResult = await byIdQuery;
+  if (!byIdResult.error && (byIdResult.count || 0) > 0) {
+    return true;
+  }
+
+  if (candidateEmail) {
+    const byEmailResult = await supabase
+      .from('advisor_profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('email', candidateEmail)
+      .eq('is_active', true);
+
+    if (!byEmailResult.error && (byEmailResult.count || 0) > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 async function buildCurrentUser(authUser: SupabaseAuthUser): Promise<StrapiUser> {
   const studentId = getStudentIdFromAuthUser(authUser);
+  let advisorFlag = false;
+
+  try {
+    advisorFlag = await isAdvisorUser(authUser);
+  } catch (error) {
+    console.warn('Advisor role lookup failed, falling back to auth metadata role.', error);
+  }
 
   try {
     const profile = await fetchProfile(studentId);
-    return buildUser(authUser, profile);
+    const baseUser = buildUser(authUser, profile);
+
+    if (advisorFlag) {
+      return {
+        ...baseUser,
+        role: {
+          id: ROLES.ADMIN,
+          name: 'Advisor',
+          type: ROLES.ADMIN,
+        },
+      };
+    }
+
+    return baseUser;
   } catch (error) {
     // Keep auth usable even if profile table sync/read fails.
     console.warn('Profile fetch failed, using auth metadata fallback.', error);
-    return buildUser(authUser, null);
+    const baseUser = buildUser(authUser, null);
+
+    if (advisorFlag) {
+      return {
+        ...baseUser,
+        role: {
+          id: ROLES.ADMIN,
+          name: 'Advisor',
+          type: ROLES.ADMIN,
+        },
+      };
+    }
+
+    return baseUser;
   }
 }
 

@@ -29,6 +29,7 @@ export const STATIC_MENU_ITEMS: MenuItem[] = [
       { label: 'How To Apply', to: '/how-to-apply' },
     ],
   },
+  { label: 'Advising', to: '/advising' },
   {
     label: 'Activities',
     to: '/activities',

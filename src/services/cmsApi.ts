@@ -20,6 +20,7 @@ const TABLES = {
   academics: getTable('VITE_SUPABASE_ACADEMICS_TABLE', ''),
   questionnaires: getTable('VITE_SUPABASE_QUESTIONNAIRES_TABLE', ''),
   resources: getTable('VITE_SUPABASE_STUDENT_RESOURCES_TABLE', 'student_resources'),
+  advisorResources: getTable('VITE_SUPABASE_ADVISOR_RESOURCES_TABLE', 'advisor_resources'),
   announcements: getTable('VITE_SUPABASE_ANNOUNCEMENTS_TABLE', ''),
   contactUs: getTable('VITE_SUPABASE_CONTACT_US_TABLE', ''),
   activities: getTable('VITE_SUPABASE_ACTIVITIES_TABLE', 'activities'),
@@ -41,6 +42,7 @@ const STORAGE_BUCKETS = {
   news: getTable('VITE_SUPABASE_NEWS_IMAGES_BUCKET', 'news-images'),
   events: getTable('VITE_SUPABASE_EVENT_IMAGES_BUCKET', 'event-images'),
   activities: getTable('VITE_SUPABASE_ACTIVITIES_IMAGES_BUCKET', 'activity-images'),
+  resources: getTable('VITE_SUPABASE_RESOURCES_FILES_BUCKET', 'resources-files'),
   honorList: getTable('VITE_SUPABASE_HONOR_LIST_FILES_BUCKET', 'honor-list-files'),
   studyPlans: getTable('VITE_SUPABASE_STUDY_PLAN_FILES_BUCKET', 'study-plan-files'),
   schedules: getTable('VITE_SUPABASE_SCHEDULE_FILES_BUCKET', 'schedule-files'),
@@ -104,6 +106,16 @@ export type StudentResourceItem = {
   thumbnailUrl?: string;
 };
 
+export type AdvisorResourceItem = {
+  id: string;
+  title: string;
+  resourceType: 'file' | 'link' | 'video';
+  resourceUrl: string;
+  description?: string;
+  duration?: string;
+  thumbnailUrl?: string;
+};
+
 export type HonorListDocumentItem = {
   id: string;
   title: string;
@@ -160,6 +172,7 @@ const DEFAULT_HERO_NAV_TREE: HeroNavTreeItem[] = [
       { title: 'How To Apply', url: '/how-to-apply', target: '_self', accessRole: 'public', children: [] },
     ],
   },
+  { title: 'Advising', url: '/advising', target: '_self', accessRole: 'public', children: [] },
   {
     title: 'Activities',
     url: '/activities',
@@ -629,6 +642,47 @@ export async function getHonorListDocuments(): Promise<HonorListDocumentItem[]> 
   }).filter((item) => item.fileUrl !== '#');
 }
 
+export async function getAdvisorResources(): Promise<AdvisorResourceItem[]> {
+  const { data, error } = await supabase
+    .from(TABLES.advisorResources)
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data || []).map((raw) => {
+    const row = unwrapRow(raw) as Record<string, unknown>;
+    const filePath = pickString(row.file_path, row.filePath);
+    const directUrl = pickString(row.resource_url, row.resourceUrl, row.url);
+    const resourceTypeRaw = pickString(row.resource_type, row.resourceType) || 'file';
+    const resourceType =
+      resourceTypeRaw === 'video' || resourceTypeRaw === 'link' || resourceTypeRaw === 'file'
+        ? resourceTypeRaw
+        : 'file';
+    const thumbnailRaw = pickString(row.thumbnail_path, row.thumbnailPath, row.thumbnail_url, row.thumbnailUrl, row.image_url, row.imageUrl);
+    const durationRaw = row.duration ?? row.video_duration ?? row.videoDuration ?? row.duration_label ?? row.durationLabel;
+
+    let duration: string | undefined;
+    if (typeof durationRaw === 'string' && durationRaw.trim()) {
+      duration = durationRaw.trim();
+    } else if (typeof durationRaw === 'number' && Number.isFinite(durationRaw) && durationRaw > 0) {
+      duration = `${Math.round(durationRaw)} sec`;
+    }
+
+    return {
+      id: toId(row.id),
+      title: pickString(row.title) || 'Advisor Resource',
+      resourceType,
+      resourceUrl: directUrl || (filePath ? getCmsMediaUrl(filePath) : '#'),
+      description: pickString(row.description, row.summary, row.details),
+      duration,
+      thumbnailUrl: thumbnailRaw ? getCmsMediaUrl(thumbnailRaw) : undefined,
+    };
+  }).filter((item) => item.resourceUrl && item.resourceUrl !== '#');
+}
+
 export async function getAnnouncements(): Promise<Announcements> {
   return fetchSingle<Announcements>(TABLES.announcements, toFallbackSingleType('Announcements'));
 }
@@ -999,6 +1053,8 @@ export function getCmsMediaUrl(path: string): string {
     bucketName = STORAGE_BUCKETS.events;
   } else if (lowerSegment === 'activities' || lowerSegment === 'activity') {
     bucketName = STORAGE_BUCKETS.activities;
+  } else if (lowerSegment === 'resources' || lowerSegment === 'resource') {
+    bucketName = STORAGE_BUCKETS.resources;
   } else if (lowerSegment === 'honor-list' || lowerSegment === 'honor_list' || lowerSegment === 'honorlist') {
     bucketName = STORAGE_BUCKETS.honorList;
   } else if (lowerSegment === 'gallery' || lowerSegment === 'photo_gallery') {

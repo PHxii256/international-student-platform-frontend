@@ -69,7 +69,7 @@ export function PlaygroundVideo({
   }, [src]);
 
   return (
-    <article className="mx-auto max-w-4xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-600 dark:bg-slate-800 dark:shadow-slate-900/50">
+    <article className="mx-auto min-w-80 min-h-36 max-w-4xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-600 dark:bg-slate-800 dark:shadow-slate-900/50">
       <div className="aspect-video w-full bg-black">
         {isExternal ? (
           <a
